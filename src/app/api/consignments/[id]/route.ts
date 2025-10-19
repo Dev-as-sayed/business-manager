@@ -1,13 +1,13 @@
+import dbConnect from "@/db/db";
+import { ConsignmentModel } from "@/db/model/Consignment";
 import { NextResponse } from "next/server";
-import { dbConnect } from "@/lib/dbConnect";
-import { ConsignmentModel } from "@/models/consignment.model";
 
 export async function GET(_: Request, { params }: { params: { id: string } }) {
   await dbConnect();
   try {
-    const consignment = await ConsignmentModel.findById(params.id)
-      .populate("supplier", "name email")
-      .populate("customer", "name email");
+    const consignment = await ConsignmentModel.findById(params.id).populate(
+      "users"
+    );
     if (!consignment)
       return NextResponse.json(
         { message: "Consignment not found" },
