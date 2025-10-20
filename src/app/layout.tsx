@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { BiBell, BiUser } from "react-icons/bi";
+import { FiSettings } from "react-icons/fi";
+import Sidebar from "@/components/Shared/Sidebar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,10 +27,35 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
+      <body className="flex h-screen min-w-full bg-gray-100 text-gray-800">
+        <Sidebar />
+
+        <main>
+          <main className="flex-1 flex flex-col">
+            {/* Top bar */}
+            <header className="h-14 bg-white flex items-center justify-between px-6 shadow-sm">
+              <div className="flex items-center gap-3">
+                <input
+                  type="text"
+                  placeholder="Search"
+                  className="border border-gray-300 rounded-md px-3 py-1.5 text-sm w-64 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                />
+              </div>
+              <div className="flex items-center gap-4">
+                <BiBell className="text-gray-500 cursor-pointer hover:text-blue-600" />
+                <FiSettings className="text-gray-500 cursor-pointer hover:text-blue-600" />
+                <BiUser className="text-gray-500 cursor-pointer hover:text-blue-600" />
+              </div>
+            </header>
+
+            {/* Dynamic page content */}
+            <body
+              className={`${geistSans.variable} ${geistMono.variable} antialiased p-6 overflow-y-auto`}
+            >
+              {children}
+            </body>
+          </main>
+        </main>
       </body>
     </html>
   );
