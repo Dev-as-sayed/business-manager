@@ -45,11 +45,11 @@ const Sidebar = () => {
           className="p-6"
         >
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-gradient-main flex items-center justify-center">
+            <div className="h-10 w-10 rounded-xl bg-gradient-primary flex items-center justify-center">
               <span className="text-white font-bold text-lg">LM</span>
             </div>
             <div>
-              <h1 className="text-xl font-bold text-text-DEFAULT">
+              <h1 className="text-xl font-bold text-text-DEFAULT gradient-text">
                 LogiManage
               </h1>
               <p className="text-xs text-text-muted">Supply Chain Pro</p>
@@ -57,7 +57,7 @@ const Sidebar = () => {
           </div>
         </motion.div>
 
-        <nav className="mt-4 space-y-1 px-4">
+        <nav className="mt-4 space-y-2 px-4">
           {navLinks.map((link, index) => (
             <motion.div
               key={link.title}
@@ -66,10 +66,10 @@ const Sidebar = () => {
             >
               <Link
                 href={link.path}
-                className={`flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 group ${
+                className={`nav-item ${
                   pathname === link.path
-                    ? "bg-primary-DEFAULT text-white shadow-soft"
-                    : "text-text-light hover:bg-background-accent hover:text-text-DEFAULT"
+                    ? "nav-item-active"
+                    : "nav-item-inactive"
                 }`}
               >
                 <span className="text-base">{link.icon}</span>
@@ -78,7 +78,7 @@ const Sidebar = () => {
                   className={`transition-transform duration-200 ${
                     pathname === link.path
                       ? "rotate-90 text-white"
-                      : "text-text-muted group-hover:text-primary-light"
+                      : "text-text-muted group-hover:text-primary-500"
                   }`}
                 />
               </Link>
@@ -94,10 +94,10 @@ const Sidebar = () => {
       >
         <div className="flex items-center gap-3">
           <div className="relative">
-            <div className="h-12 w-12 rounded-full bg-gradient-main flex items-center justify-center">
+            <div className="h-12 w-12 rounded-full bg-gradient-primary flex items-center justify-center">
               <span className="text-white font-semibold">AS</span>
             </div>
-            <div className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full bg-success border-2 border-white"></div>
+            <div className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full bg-success-500 border-2 border-white"></div>
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-text-DEFAULT truncate">
@@ -110,7 +110,7 @@ const Sidebar = () => {
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="p-2 rounded-lg hover:bg-background-accent text-text-muted hover:text-danger transition-colors"
+            className="btn-ghost p-2 text-text-muted hover:text-error-500"
           >
             <BiLogOut size={18} />
           </motion.button>

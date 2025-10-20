@@ -2,7 +2,7 @@
 
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { BiBell, BiSearch } from "react-icons/bi";
+import { BiBell, BiUser } from "react-icons/bi";
 import { FiSettings } from "react-icons/fi";
 import Sidebar from "@/components/Shared/Sidebar";
 
@@ -26,52 +26,33 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <div className="flex h-screen min-w-full bg-background-DEFAULT text-text-DEFAULT">
+        <div className="flex h-screen bg-background text-text-primary">
+          {/* Sidebar */}
           <Sidebar />
 
-          <div className="flex-1 flex flex-col min-w-0">
-            {/* Enhanced Top Bar */}
-            <div className="flex justify-around">
-              <div className="relative">
-                <BiSearch
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-muted"
-                  size={18}
-                />
+          {/* Main Content */}
+          <main className="flex-1 flex flex-col">
+            {/* Top bar */}
+            <header className="h-14 bg-background border-b border-border flex items-center justify-between px-6 shadow-sm">
+              <div className="flex items-center gap-3">
                 <input
                   type="text"
-                  placeholder="Search shipments, customers, suppliers..."
-                  className="border border-border-strong rounded-xl pl-10 pr-4 py-2.5 text-sm w-80 focus:ring-2 focus:ring-primary-light focus:border-primary-light focus:outline-none transition-all duration-200 bg-background-accent/50"
+                  placeholder="Search"
+                  className="border border-border rounded-md px-3 py-1.5 text-sm w-64 focus:ring-2 focus:ring-primary focus:outline-none bg-background text-text-primary placeholder-text-muted"
                 />
               </div>
-
-              <div className="flex items-center gap-6">
-                <BiBell
-                  className="text-text-light hover:text-primary-DEFAULT transition-colors"
-                  size={20}
-                />
-                <span className="absolute -top-1 -right-1 h-4 w-4 bg-danger rounded-full flex items-center justify-center">
-                  <span className="text-white text-xs">3</span>
-                </span>
-
-                <FiSettings
-                  className="text-text-light hover:text-primary-DEFAULT transition-colors"
-                  size={18}
-                />
-
-                <div className="h-8 w-8 rounded-full bg-gradient-main flex items-center justify-center">
-                  <span className="text-white text-sm font-semibold">AS</span>
-                </div>
-                <div className="hidden md:block">
-                  <p className="text-sm font-semibold text-text-DEFAULT">
-                    Alex Smith
-                  </p>
-                  <p className="text-xs text-text-muted">Administrator</p>
-                </div>
+              <div className="flex items-center gap-4">
+                <BiBell className="text-text-secondary cursor-pointer hover:text-primary transition-colors" />
+                <FiSettings className="text-text-secondary cursor-pointer hover:text-primary transition-colors" />
+                <BiUser className="text-text-secondary cursor-pointer hover:text-primary transition-colors" />
               </div>
-            </div>
-            {/* Main Content Area */}
-            <div className="max-w-7xl mx-auto">{children}</div>
-          </div>
+            </header>
+
+            {/* Dynamic page content */}
+            <section className="p-6 overflow-y-auto bg-secondary-background">
+              {children}
+            </section>
+          </main>
         </div>
       </body>
     </html>

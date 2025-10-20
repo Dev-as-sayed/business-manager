@@ -1,26 +1,127 @@
 @import "tailwindcss";
 
+/* 🌐 Root Variables (Light Theme – Default) */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Backgrounds */
+  --background: #fafafa; /* Softer off-white for comfort */
+  --secondary-background: #f3f4f6;
+  --foreground: #111827; /* Deep neutral gray */
+  --border: #e5e7eb;
+
+  /* Text */
+  --text-primary: #111827; /* Near-black */
+  --text-secondary: #4b5563; /* Mid gray */
+  --text-muted: #9ca3af; /* Soft gray for hints */
+
+  /* Primary (Brand) */
+  --primary: #2563eb; /* Blue-600 */
+  --primary-hover: #1d4ed8; /* Blue-700 */
+  --primary-foreground: #ffffff;
+
+  /* Secondary */
+  --secondary: #6366f1; /* Indigo-500 */
+  --secondary-hover: #4f46e5; /* Indigo-600 */
+  --secondary-foreground: #ffffff;
+
+  /* Success / Action */
+  --action: #10b981; /* Emerald-500 */
+  --action-hover: #059669; /* Emerald-600 */
+  --action-foreground: #ffffff;
+
+  /* Warning */
+  --warning: #f59e0b;
+  --warning-hover: #d97706;
+  --warning-foreground: #ffffff;
+
+  /* Danger */
+  --danger: #ef4444; /* Red-500 */
+  --danger-hover: #dc2626; /* Red-600 */
+  --danger-foreground: #ffffff;
+
+  /* Accent (used for cards or highlights) */
+  --accent: #f9fafb;
+  --accent-hover: #f3f4f6;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
+/* 🌙 Dark Theme */
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
-    --foreground: #ededed;
+    --secondary-background: #111111;
+    --foreground: #fafafa;
+    --border: #27272a;
+
+    --text-primary: #f5f5f5;
+    --text-secondary: #a3a3a3;
+    --text-muted: #6b7280;
+
+    --primary: #3b82f6; /* Slightly brighter for dark mode */
+    --primary-hover: #2563eb;
+    --primary-foreground: #ffffff;
+
+    --secondary: #818cf8;
+    --secondary-hover: #6366f1;
+    --secondary-foreground: #ffffff;
+
+    --action: #34d399;
+    --action-hover: #10b981;
+    --action-foreground: #ffffff;
+
+    --warning: #fbbf24;
+    --warning-hover: #f59e0b;
+    --warning-foreground: #111111;
+
+    --danger: #f87171;
+    --danger-hover: #ef4444;
+    --danger-foreground: #ffffff;
+
+    --accent: #18181b;
+    --accent-hover: #27272a;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* 🌀 Smooth Scrollbar Hiding */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* 🎨 Tailwind Bridge */
+@theme inline {
+  /* Layout */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+
+  /* Text */
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+
+  /* Brand / Buttons */
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-hover: var(--secondary-hover);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  /* Functional */
+  --color-action: var(--action);
+  --color-action-hover: var(--action-hover);
+  --color-action-foreground: var(--action-foreground);
+
+  --color-warning: var(--warning);
+  --color-warning-hover: var(--warning-hover);
+  --color-warning-foreground: var(--warning-foreground);
+
+  --color-danger: var(--danger);
+  --color-danger-hover: var(--danger-hover);
+  --color-danger-foreground: var(--danger-foreground);
 }
