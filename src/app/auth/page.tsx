@@ -2,49 +2,16 @@
 
 import { useState } from "react";
 import { useAuth } from "@/context/AuthProvider";
-import { useRouter } from "next/navigation";
 import { RiLoader2Fill } from "react-icons/ri";
 
 const AuthPage = () => {
-  const router = useRouter();
-  const { login } = useAuth();
-
-  // 🧠 State management
+  const { login, loading, error } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
 
-  // 🚀 Handle Login
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-    setLoading(true);
-
-    try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.message || "Invalid credentials");
-        return;
-      }
-
-      // ✅ Save token & user info in context
-      login(data.token, data.user);
-
-      // 🧭 Redirect to dashboard or home
-      router.push("/dashboard");
-    } catch (err: any) {
-      setError("Something went wrong. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+    await login(email, password);
   };
 
   return (
@@ -99,16 +66,6 @@ const AuthPage = () => {
             )}
           </button>
         </form>
-
-        <p className="text-center text-sm text-text-muted mt-6">
-          Don’t have an account?{" "}
-          <a
-            href="/register"
-            className="text-primary hover:text-primary-hover font-medium"
-          >
-            Create one
-          </a>
-        </p>
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import { Schema, model } from "mongoose";
+import { Schema, model, models } from "mongoose";
 import { TUser } from "../interface/user";
 import bcrypt from "bcrypt";
 
@@ -23,7 +23,6 @@ const userSchema = new Schema<TUser>(
 
 // 🧠 Pre-save hook for password hashing
 userSchema.pre("save", async function (next) {
-  // Only hash the password if it’s new or modified
   if (!this.isModified("password")) return next();
 
   try {
@@ -36,9 +35,10 @@ userSchema.pre("save", async function (next) {
   }
 });
 
-// ✅ Compare password method (optional and recommended)
+// ✅ Compare password method
 userSchema.methods.comparePassword = async function (enteredPassword: string) {
   return bcrypt.compare(enteredPassword, this.password);
 };
 
-export const UserModel = model<TUser>("User", userSchema);
+// ✅ Prevent model overwrite on hot reload
+export const UserModel = models.User || model<TUser>("User", userSchema);

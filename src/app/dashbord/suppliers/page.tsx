@@ -1,5 +1,5 @@
-const supplierMemagement = () => {
+const SupplierTable = () => {
   return <div></div>;
 };
 
-export default supplierMemagement;
+export default SupplierTable;

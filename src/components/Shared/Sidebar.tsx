@@ -6,17 +6,18 @@ import { motion } from "framer-motion";
 import { BiLogOut, BiChevronRight } from "react-icons/bi";
 
 const navLinks = [
-  { title: "Dashboard", path: "/", icon: "📊" },
-  { title: "Suppliers", path: "/suppliers", icon: "🏢" },
-  { title: "Customers", path: "/customers", icon: "👥" },
-  { title: "Consignments", path: "/consignments", icon: "📦" },
-  { title: "Products", path: "/products", icon: "🛍️" },
-  { title: "Payments", path: "/payments", icon: "💳" },
-  { title: "Reports", path: "/reports", icon: "📈" },
-  { title: "Settings", path: "/settings", icon: "⚙️" },
+  { title: "Dashboard", path: "/dashbord", icon: "📊" },
+  { title: "Add user", path: "/dashbord/add-user", icon: "🏢" },
+  { title: "Suppliers", path: "/dashbord/suppliers", icon: "🏢" },
+  { title: "Customers", path: "/dashbord/customers", icon: "👥" },
+  { title: "Consignments", path: "/dashbord/consignments", icon: "📦" },
+  { title: "Products", path: "/dashbord/products", icon: "🛍️" },
+  { title: "Payments", path: "/dashbord/payments", icon: "💳" },
+  { title: "Reports", path: "/dashbord/reports", icon: "📈" },
+  { title: "Settings", path: "/dashbord/settings", icon: "⚙️" },
 ];
 
-const Sidebar = () => {
+const Sidebar = ({ logout }) => {
   const pathname = usePathname();
 
   const sidebarVariants = {
@@ -111,6 +112,7 @@ const Sidebar = () => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             className="btn-ghost p-2 text-text-muted hover:text-error-500"
+            onClick={() => logout()}
           >
             <BiLogOut size={18} />
           </motion.button>
