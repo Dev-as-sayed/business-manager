@@ -39,12 +39,30 @@ export async function POST(req: Request) {
 }
 
 // ✅ GET /api/users → Get all users
-export async function GET() {
+
+export async function GET(req: Request) {
   await dbConnect();
+
   try {
-    const users = await UserModel.find().select("-password");
+    // Extract role from query params
+    const { searchParams } = new URL(req.url);
+    const role = searchParams.get("role");
+
+    let users;
+
+    if (role) {
+      // ✅ Filter users by role (admin, customer, supplier)
+      users = await UserModel.find({ role }).select("-password");
+    } else {
+      // ✅ Get all users if no role filter
+      users = await UserModel.find().select("-password");
+    }
+
     return NextResponse.json({ users });
   } catch (error: any) {
-    return NextResponse.json({ message: error.message }, { status: 500 });
+    return NextResponse.json(
+      { message: error.message || "Something went wrong" },
+      { status: 500 }
+    );
   }
 }
