@@ -1,5 +1,6 @@
 import { Schema, model } from "mongoose";
 import { TConsignment } from "../interface/Consignment";
+import { models } from "mongoose";
 
 const transactionSchema = new Schema(
   {
@@ -91,7 +92,5 @@ consignmentSchema.pre("save", function (next) {
   next();
 });
 
-export const ConsignmentModel = model<TConsignment>(
-  "Consignment",
-  consignmentSchema
-);
+export const ConsignmentModel =
+  models.Consignment || model<TConsignment>("Consignment", consignmentSchema);
