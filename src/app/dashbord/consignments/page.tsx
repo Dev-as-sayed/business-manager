@@ -75,7 +75,7 @@ const ConsignmentsManagement = () => {
           Consignments Management
         </h1>
         <button
-          onClick={() => router.push("/dashboard/consignments/add")}
+          onClick={() => router.push("/dashbord/consignments/add")}
           className="btn-primary flex items-center gap-2"
         >
           <BiPlus className="w-4 h-4" /> Add New Consignment
