@@ -45,6 +45,7 @@ const consignmentProductSchema = new Schema(
 const consignmentSchema = new Schema<TConsignment>(
   {
     consignmentId: { type: String, required: true, unique: true },
+    admin: { type: Schema.Types.ObjectId, ref: "User", required: true },
     supplier: { type: Schema.Types.ObjectId, ref: "User", required: true },
     customer: { type: Schema.Types.ObjectId, ref: "User", required: true },
     products: [consignmentProductSchema],

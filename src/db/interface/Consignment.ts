@@ -29,6 +29,7 @@ export interface TConsignmentProduct {
 export interface TConsignment {
   _id?: string;
   consignmentId: string;
+  admin: Types.ObjectId; // admin add this consignment
   supplier: Types.ObjectId; // user who supplied goods
   customer: Types.ObjectId; // user receiving goods
   products: TConsignmentProduct[];
