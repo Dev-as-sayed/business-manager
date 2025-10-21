@@ -8,6 +8,7 @@ import { BiLogOut, BiChevronRight } from "react-icons/bi";
 const navLinks = [
   { title: "Dashboard", path: "/dashbord", icon: "📊" },
   { title: "Add user", path: "/dashbord/add-user", icon: "🏢" },
+  { title: "Admins", path: "/dashbord/admins", icon: "🏢" },
   { title: "Suppliers", path: "/dashbord/suppliers", icon: "🏢" },
   { title: "Customers", path: "/dashbord/customers", icon: "👥" },
   { title: "Consignments", path: "/dashbord/consignments", icon: "📦" },

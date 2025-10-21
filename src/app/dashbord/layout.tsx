@@ -51,7 +51,7 @@ export default function RootLayout({
 
         {/* Dynamic page content */}
         <section className="p-6 overflow-y-auto bg-secondary-background">
-          <AuthProvider>{children}</AuthProvider>
+          {children}
         </section>
       </main>
     </div>
