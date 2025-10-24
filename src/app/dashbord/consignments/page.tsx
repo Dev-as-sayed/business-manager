@@ -148,6 +148,7 @@ const ConsignmentsManagement = () => {
               <th className="p-4 text-text-primary font-semibold">Total</th>
               <th className="p-4 text-text-primary font-semibold">Advance</th>
               <th className="p-4 text-text-primary font-semibold">Due</th>
+              <th className="p-4 text-text-primary font-semibold">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -172,42 +173,45 @@ const ConsignmentsManagement = () => {
                   key={c._id}
                   className="border-b border-border hover:bg-accent transition-colors duration-150"
                 >
-                  <Link href={`/dashbord/consignments/${c._id}`}>
-                    <td className="p-4 text-text-muted">{i + 1}</td>
-                    <td className="p-4 font-medium text-text-primary">
-                      {c.consignmentId}
-                    </td>
-                    <td className="p-4 text-text-secondary">
-                      {c.supplier?.name || "N/A"}
-                    </td>
-                    <td className="p-4 text-text-secondary">
-                      {c.customer?.name || "N/A"}
-                    </td>
-                    <td className="p-4 text-text-secondary">
-                      {c.startDate
-                        ? format(new Date(c.startDate), "yyyy-MM-dd")
-                        : "—"}
-                    </td>
-                    <td className="p-4 text-text-secondary">{c.destination}</td>
-                    <td className="p-4">
-                      <span
-                        className={`px-3 py-1.5 rounded-full text-xs font-semibold capitalize ${getStatusBadgeClass(
-                          c.status
-                        )}`}
-                      >
-                        {c.status}
-                      </span>
-                    </td>
-                    <td className="p-4 font-semibold text-text-primary">
-                      ${c.totalAmount.toFixed(2)}
-                    </td>
-                    <td className="p-4 text-text-secondary">
-                      ${c.totalAdvance.toFixed(2)}
-                    </td>
-                    <td className="p-4 font-medium text-text-primary">
-                      ${c.totalDue.toFixed(2)}
-                    </td>
-                  </Link>
+                  <td className="p-4 text-text-muted">{i + 1}</td>
+                  <td className="p-4 font-medium text-text-primary">
+                    {c.consignmentId}
+                  </td>
+                  <td className="p-4 text-text-secondary">
+                    {c.supplier?.name || "N/A"}
+                  </td>
+                  <td className="p-4 text-text-secondary">
+                    {c.customer?.name || "N/A"}
+                  </td>
+                  <td className="p-4 text-text-secondary">
+                    {c.startDate
+                      ? format(new Date(c.startDate), "yyyy-MM-dd")
+                      : "—"}
+                  </td>
+                  <td className="p-4 text-text-secondary">{c.destination}</td>
+                  <td className="p-4">
+                    <span
+                      className={`px-3 py-1.5 rounded-full text-xs font-semibold capitalize ${getStatusBadgeClass(
+                        c.status
+                      )}`}
+                    >
+                      {c.status}
+                    </span>
+                  </td>
+                  <td className="p-4 font-semibold text-text-primary">
+                    ${c.totalAmount.toFixed(2)}
+                  </td>
+                  <td className="p-4 text-text-secondary">
+                    ${c.totalAdvance.toFixed(2)}
+                  </td>
+                  <td className="p-4 font-medium text-text-primary">
+                    ${c.totalDue.toFixed(2)}
+                  </td>
+                  <td className="p-4 font-medium text-text-primary">
+                    <Link href={`/dashbord/consignments/${c._id}`}>
+                      <button>Detail</button>
+                    </Link>
+                  </td>
                 </tr>
               ))
             )}

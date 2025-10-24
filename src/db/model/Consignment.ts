@@ -23,24 +23,21 @@ const transactionSchema = new Schema(
   { _id: false }
 );
 
-const consignmentProductSchema = new Schema(
-  {
-    category: {
-      type: String,
-      enum: ["mobile", "laptop", "accessory", "other"],
-      required: true,
-    },
-    brand: { type: String, required: true },
-    model: { type: String, required: true },
-    specs: { type: String },
-    buyingPrice: { type: Number, required: true },
-    sellingPrice: { type: Number, required: true },
-    quantity: { type: Number, required: true },
-    totalbuyingCost: { type: Number },
-    totalsellingCost: { type: Number },
+const consignmentProductSchema = new Schema({
+  category: {
+    type: String,
+    enum: ["mobile", "laptop", "accessory", "other"],
+    required: true,
   },
-  { _id: false }
-);
+  brand: { type: String, required: true },
+  model: { type: String, required: true },
+  specs: { type: String },
+  buyingPrice: { type: Number, required: true },
+  sellingPrice: { type: Number, required: true },
+  quantity: { type: Number, required: true },
+  totalbuyingCost: { type: Number },
+  totalsellingCost: { type: Number },
+});
 
 const consignmentSchema = new Schema<TConsignment>(
   {
