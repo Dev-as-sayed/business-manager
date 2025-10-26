@@ -12,10 +12,6 @@ const navLinks = [
   { title: "Suppliers", path: "/dashbord/suppliers", icon: "🏢" },
   { title: "Customers", path: "/dashbord/customers", icon: "👥" },
   { title: "Consignments", path: "/dashbord/consignments", icon: "📦" },
-  { title: "Products", path: "/dashbord/products", icon: "🛍️" },
-  { title: "Payments", path: "/dashbord/payments", icon: "💳" },
-  { title: "Reports", path: "/dashbord/reports", icon: "📈" },
-  { title: "Settings", path: "/dashbord/settings", icon: "⚙️" },
 ];
 
 const Sidebar = ({ logout }) => {

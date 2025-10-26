@@ -37,6 +37,7 @@ const consignmentProductSchema = new Schema({
   quantity: { type: Number, required: true },
   totalbuyingCost: { type: Number },
   totalsellingCost: { type: Number },
+  isRefunded: { type: Boolean, default: false },
 });
 
 const consignmentSchema = new Schema<TConsignment>(
@@ -46,7 +47,7 @@ const consignmentSchema = new Schema<TConsignment>(
     supplier: { type: Schema.Types.ObjectId, ref: "User", required: true },
     customer: { type: Schema.Types.ObjectId, ref: "User", required: true },
     products: [consignmentProductSchema],
-    transactions: [transactionSchema], // 💰 Array of transaction records
+    transactions: [transactionSchema],
     startDate: { type: Date, required: true },
     shippingDate: { type: Date },
     deliveryDate: { type: Date },
@@ -59,14 +60,12 @@ const consignmentSchema = new Schema<TConsignment>(
       enum: ["pending", "in-transit", "delivered", "cancelled"],
       default: "pending",
     },
-    destination: { type: String, required: true },
+    destination: { type: String, default: "Bangladesh" },
   },
   { timestamps: true }
 );
 
-// 🧮 Pre-save hook for automatic totals
-consignmentSchema.pre("save", function (next) {
-  // Calculate totalbuyingCost and totalsellingCost
+consignmentSchema.pre("validate", function (next) {
   this.products.forEach((p) => {
     p.totalbuyingCost = p.buyingPrice * p.quantity;
     p.totalsellingCost = p.sellingPrice * p.quantity;
@@ -79,13 +78,14 @@ consignmentSchema.pre("save", function (next) {
 
   this.totalAmount = productTotal + this.shippingCost;
 
-  // Calculate advance & due from transactions
   const totalAdvance = this.transactions
     .filter((t) => t.type === "advance" || t.type === "payment")
     .reduce((sum, t) => sum + t.amount, 0);
 
   this.totalAdvance = totalAdvance;
   this.totalDue = this.totalAmount - totalAdvance;
+
+  console.log(this);
 
   next();
 });

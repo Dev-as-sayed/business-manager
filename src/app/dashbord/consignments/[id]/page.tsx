@@ -6,6 +6,8 @@ import { format } from "date-fns";
 import { TbLoader2 } from "react-icons/tb";
 import { BiEdit } from "react-icons/bi";
 import { BsTrash2 } from "react-icons/bs";
+import { RiRefundFill } from "react-icons/ri";
+import { HiReceiptRefund } from "react-icons/hi";
 
 type User = { _id: string; name: string; email: string };
 type Transaction = {
@@ -1000,12 +1002,18 @@ const ConsignmentDetails = () => {
                   key={i}
                   className="border-t border-border hover:bg-accent/50 transition-colors"
                 >
-                  <td className="p-3">
+                  <td className="p-3 flex gap-2">
                     <button
                       onClick={() => handleEditProduct(i)}
                       className="text-primary hover:text-primary-hover transition-colors"
                     >
-                      <BiEdit className="w-4 h-4" />
+                      <BiEdit className="w-8 h-8" />
+                    </button>
+                    <button
+                      onClick={() => handleEditProduct(i)}
+                      className="text-primary hover:text-primary-hover transition-colors"
+                    >
+                      <HiReceiptRefund className="w-8 h-8" />
                     </button>
                   </td>
                   <td className="p-3 text-text-secondary">{p.category}</td>

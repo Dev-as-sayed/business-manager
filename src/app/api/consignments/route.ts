@@ -7,6 +7,8 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
 
+    console.log("hist on post consignment api", body);
+
     const consignment = await ConsignmentModel.create(body);
     return NextResponse.json(
       { message: "✅ Consignment created", consignment },

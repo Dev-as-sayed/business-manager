@@ -23,6 +23,7 @@ export interface TConsignmentProduct {
   quantity: number;
   totalbuyingCost?: number;
   totalsellingCost?: number;
+  isRefunded: boolean;
 }
 
 // ✅ Main Consignment

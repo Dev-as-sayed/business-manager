@@ -18,9 +18,11 @@ const AddNewConsignment = () => {
     "basic" | "products" | "transactions"
   >("basic");
 
+  console.log(user);
+
   const [consignment, setConsignment] = useState({
     consignmentId: `CNG-${Date.now()}`,
-    admin: "",
+    admin: user?.id || "",
     supplier: "",
     customer: "",
     destination: "",
@@ -51,6 +53,9 @@ const AddNewConsignment = () => {
         note: "",
       },
     ],
+    totalAmount: 0,
+    totalAdvance: 0,
+    totalDue: 0,
   });
 
   const [customer, setCustomers] = useState([]);
@@ -77,6 +82,7 @@ const AddNewConsignment = () => {
     try {
       const res = await fetch("/api/users?role=supplier");
       const data = await res.json();
+      console.log(data);
       setSuppliers(data.users || []);
     } catch (error) {
       console.error("Error fetching suppliers:", error);
@@ -195,6 +201,16 @@ const AddNewConsignment = () => {
     setLoading(true);
     setMessage(null);
 
+    console.log(consignment);
+
+    consignment.totalAdvance = consignment.transactions.reduce(
+      (sum, txn) => sum + txn.amount,
+      0
+    );
+
+    consignment.totalDue = consignment.totalAmount - consignment.totalAdvance;
+
+    consignment.destination = "Bangladesh";
     try {
       const res = await fetch("/api/consignments", {
         method: "POST",
@@ -209,7 +225,7 @@ const AddNewConsignment = () => {
           text: "Consignment created successfully! Redirecting...",
         });
         setTimeout(() => {
-          window.location.href = "/dashboard/consignments";
+          window.location.href = "/dashbord/consignments";
         }, 2000);
       } else {
         setMessage({
@@ -293,10 +309,10 @@ const AddNewConsignment = () => {
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-6">
-          {/* Main Form */}
-          <div className="lg:col-span-2">
-            <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid lg:grid-cols-3 gap-6">
+            {/* Main Form */}
+            <div className="lg:col-span-2">
               <AnimatePresence mode="wait">
                 {activeSection === "basic" && (
                   <motion.div
@@ -330,28 +346,41 @@ const AddNewConsignment = () => {
                         <label className="block text-sm font-medium text-text-secondary mb-1">
                           Supplier ID
                         </label>
-                        <input
+                        <select
                           name="supplier"
-                          placeholder="Enter supplier ID"
                           value={consignment.supplier}
                           onChange={handleChange}
-                          className="input w-full"
+                          className="input w-full bg-black"
                           required
-                        />
+                        >
+                          <option value="">Select Supplier</option>
+                          {suppliers.map((supplier: any) => (
+                            <option key={supplier._id} value={supplier._id}>
+                              {supplier.name} ({supplier.email})
+                            </option>
+                          ))}
+                        </select>
                       </div>
 
                       <div>
                         <label className="block text-sm font-medium text-text-secondary mb-1">
                           Customer ID
                         </label>
-                        <input
+
+                        <select
                           name="customer"
-                          placeholder="Enter customer ID"
                           value={consignment.customer}
                           onChange={handleChange}
-                          className="input w-full"
+                          className="input w-full bg-black"
                           required
-                        />
+                        >
+                          <option value="">Select Customer</option>
+                          {customer.map((customer: any) => (
+                            <option key={customer._id} value={customer._id}>
+                              {customer.name} ({customer.email})
+                            </option>
+                          ))}
+                        </select>
                       </div>
 
                       <div>
@@ -782,76 +811,81 @@ const AddNewConsignment = () => {
                   {message.text}
                 </motion.div>
               )}
-            </form>
+            </div>
+
+            {/* Summary Panel */}
+            <div className="lg:col-span-1">
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 }}
+                className="card sticky top-6"
+              >
+                <h3 className="text-lg font-semibold text-text-primary mb-4">
+                  Summary
+                </h3>
+
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="text-sm font-medium text-text-secondary mb-2">
+                      Products Value
+                    </h4>
+                    <div className="text-2xl font-bold text-text-primary">
+                      ${totalProductsValue}
+                    </div>
+                    <input
+                      type="number"
+                      value={(consignment.totalAmount = totalProductsValue)}
+                      className="text-2xl font-bold text-text-primary"
+                    />
+                    <p className="text-xs text-text-muted mt-1">
+                      {consignment.products.length} product(s)
+                    </p>
+                  </div>
+
+                  <div>
+                    <h4 className="text-sm font-medium text-text-secondary mb-2">
+                      Transactions
+                    </h4>
+                    <div className="text-xl font-semibold text-text-primary">
+                      ${totalTransactions}
+                    </div>
+                    <p className="text-xs text-text-muted mt-1">
+                      {consignment.transactions.length} transaction(s)
+                    </p>
+                  </div>
+
+                  <div className="border-t border-border pt-4">
+                    <h4 className="text-sm font-medium text-text-secondary mb-2">
+                      Balance Due
+                    </h4>
+                    <div
+                      className={`text-xl font-bold ${
+                        balanceDue > 0 ? "text-warning" : "text-action"
+                      }`}
+                    >
+                      ${Math.abs(balanceDue)}
+                    </div>
+                    <p className="text-xs text-text-muted mt-1">
+                      {balanceDue > 0
+                        ? "Amount due from customer"
+                        : "Overpayment"}
+                    </p>
+                  </div>
+
+                  <div className="bg-accent rounded-lg p-3">
+                    <h4 className="text-sm font-medium text-text-primary mb-1">
+                      Shipping Cost
+                    </h4>
+                    <div className="text-lg font-semibold text-text-primary">
+                      ${consignment.shippingCost}
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
           </div>
-
-          {/* Summary Panel */}
-          <div className="lg:col-span-1">
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2 }}
-              className="card sticky top-6"
-            >
-              <h3 className="text-lg font-semibold text-text-primary mb-4">
-                Summary
-              </h3>
-
-              <div className="space-y-4">
-                <div>
-                  <h4 className="text-sm font-medium text-text-secondary mb-2">
-                    Products Value
-                  </h4>
-                  <div className="text-2xl font-bold text-text-primary">
-                    ${totalProductsValue}
-                  </div>
-                  <p className="text-xs text-text-muted mt-1">
-                    {consignment.products.length} product(s)
-                  </p>
-                </div>
-
-                <div>
-                  <h4 className="text-sm font-medium text-text-secondary mb-2">
-                    Transactions
-                  </h4>
-                  <div className="text-xl font-semibold text-text-primary">
-                    ${totalTransactions}
-                  </div>
-                  <p className="text-xs text-text-muted mt-1">
-                    {consignment.transactions.length} transaction(s)
-                  </p>
-                </div>
-
-                <div className="border-t border-border pt-4">
-                  <h4 className="text-sm font-medium text-text-secondary mb-2">
-                    Balance Due
-                  </h4>
-                  <div
-                    className={`text-xl font-bold ${
-                      balanceDue > 0 ? "text-warning" : "text-action"
-                    }`}
-                  >
-                    ${Math.abs(balanceDue)}
-                  </div>
-                  <p className="text-xs text-text-muted mt-1">
-                    {balanceDue > 0
-                      ? "Amount due from customer"
-                      : "Overpayment"}
-                  </p>
-                </div>
-
-                <div className="bg-accent rounded-lg p-3">
-                  <h4 className="text-sm font-medium text-text-primary mb-1">
-                    Shipping Cost
-                  </h4>
-                  <div className="text-lg font-semibold text-text-primary">
-                    ${consignment.shippingCost}
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        </div>
+        </form>
       </div>
     </div>
   );
