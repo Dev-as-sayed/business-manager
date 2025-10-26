@@ -89,6 +89,39 @@
   scrollbar-width: none;
 }
 
+/* Smooth transitions for sidebar */
+.sidebar-transition {
+  transition: all 0.3s ease-in-out;
+}
+
+/* Hide scrollbar for sidebar */
+.sidebar-scroll {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.sidebar-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* Mobile optimizations */
+@media (max-width: 767px) {
+  .mobile-sidebar-backdrop {
+    backdrop-filter: blur(4px);
+  }
+}
+
+/* Tablet optimizations */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .tablet-sidebar-compact {
+    width: 4rem;
+  }
+
+  .tablet-sidebar-compact .nav-text {
+    display: none;
+  }
+}
+
 /* 🎨 Tailwind Bridge */
 @theme inline {
   /* Layout */
