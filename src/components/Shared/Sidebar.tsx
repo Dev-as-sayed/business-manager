@@ -14,7 +14,7 @@ const navLinks = [
   { title: "Consignments", path: "/dashbord/consignments", icon: "📦" },
 ];
 
-const Sidebar = ({ logout }) => {
+const Sidebar = ({ logout, user }) => {
   const pathname = usePathname();
 
   const sidebarVariants = {
@@ -99,11 +99,9 @@ const Sidebar = ({ logout }) => {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-text-DEFAULT truncate">
-              Alex Smith
+              {user?.name || "Admin User"}
             </p>
-            <p className="text-xs text-text-muted truncate">
-              admin@logimanage.com
-            </p>
+            <p className="text-xs text-text-muted truncate">{user?.email}</p>
           </div>
           <motion.button
             whileHover={{ scale: 1.05 }}
