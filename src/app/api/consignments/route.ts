@@ -53,8 +53,10 @@ export async function GET(req: Request) {
 
     // ✅ Fetch consignments based on filters
     const consignments = await ConsignmentModel.find(filter)
-      .populate("supplier", "name email")
-      .populate("customer", "name email")
+      .populate({
+        path: "admin supplier customer",
+        select: "name email role",
+      })
       .sort({ createdAt: -1 });
 
     return NextResponse.json({ consignments }, { status: 200 });
