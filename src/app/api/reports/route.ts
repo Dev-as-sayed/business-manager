@@ -51,16 +51,18 @@ export async function GET() {
 
     // Sort by latest created
     const recentConsignments = consignments
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+      .filter((c) => c.createdAt) // only keep consignments that have createdAt
+      .sort((a, b) => {
+        const dateA = new Date(a.createdAt).getTime();
+        const dateB = new Date(b.createdAt).getTime();
+        return dateB - dateA;
+      })
       .slice(0, 5)
       .map((c) => ({
         id: c._id,
-        consignmentId: c.consignmentId,
-        customer: c.customer,
-        totalAmount: c.totalAmount,
-        totalDue: c.totalDue,
-        status: c.status,
+        name: c.name,
         createdAt: c.createdAt,
+        status: c.status,
       }));
 
     return NextResponse.json({
