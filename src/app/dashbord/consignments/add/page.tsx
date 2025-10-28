@@ -18,21 +18,26 @@ const AddNewConsignment = () => {
     "basic" | "products" | "transactions"
   >("basic");
 
-  console.log(user);
-
   const [consignment, setConsignment] = useState({
     consignmentId: `CNG-${Date.now()}`,
     admin: user?.id || "",
     supplier: "",
     customer: "",
-    destination: "",
+    destination: "Bangladesh",
     startDate: new Date().toISOString().split("T")[0],
     shippingDate: "",
     deliveryDate: "",
     shippingCost: 0,
+    status: "pending" as
+      | "pending"
+      | "in-transit"
+      | "delivered"
+      | "cancelled"
+      | "partially-delivered"
+      | "refunded",
     products: [
       {
-        category: "mobile",
+        category: "mobile" as "mobile" | "laptop" | "accessory" | "other",
         brand: "",
         model: "",
         specs: "",
@@ -41,6 +46,16 @@ const AddNewConsignment = () => {
         quantity: 1,
         totalbuyingCost: 0,
         totalsellingCost: 0,
+        status: "pending" as
+          | "pending"
+          | "delivered"
+          | "refunded"
+          | "returned"
+          | "damaged",
+        deliveredQuantity: 0,
+        refundedQuantity: 0,
+        profit: 0,
+        profitMargin: 0,
       },
     ],
     transactions: [
@@ -48,17 +63,39 @@ const AddNewConsignment = () => {
         transactionId: `TXN-${Date.now()}`,
         date: new Date().toISOString().split("T")[0],
         amount: 0,
-        method: "cash",
-        type: "advance",
+        method: "cash" as "cash" | "bank" | "mobile" | "card" | "other",
+        type: "advance" as
+          | "advance"
+          | "payment"
+          | "refund"
+          | "pay-in"
+          | "pay-out",
+        direction: "in" as "in" | "out",
+        party: "customer" as "customer" | "supplier" | "company",
         note: "",
+        addBy: user?.id || "",
+        status: "completed" as "pending" | "completed" | "failed",
       },
     ],
     totalAmount: 0,
     totalAdvance: 0,
     totalDue: 0,
+    totalProductCost: 0,
+    totalSellingPrice: 0,
+    grossProfit: 0,
+    netProfit: 0,
+    profitMargin: 0,
+    totalReceived: 0,
+    totalPaid: 0,
+    productStatus: {
+      total: 1,
+      delivered: 0,
+      pending: 1,
+      refunded: 0,
+    },
   });
 
-  const [customer, setCustomers] = useState([]);
+  const [customers, setCustomers] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
 
   useEffect(() => {
@@ -73,8 +110,6 @@ const AddNewConsignment = () => {
       setCustomers(data.users || []);
     } catch (error) {
       console.error("Error fetching customers:", error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -82,12 +117,9 @@ const AddNewConsignment = () => {
     try {
       const res = await fetch("/api/users?role=supplier");
       const data = await res.json();
-      console.log(data);
       setSuppliers(data.users || []);
     } catch (error) {
       console.error("Error fetching suppliers:", error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -97,19 +129,40 @@ const AddNewConsignment = () => {
       ...product,
       totalbuyingCost: product.buyingPrice * product.quantity,
       totalsellingCost: product.sellingPrice * product.quantity,
+      profit: (product.sellingPrice - product.buyingPrice) * product.quantity,
+      profitMargin:
+        product.buyingPrice > 0
+          ? ((product.sellingPrice - product.buyingPrice) /
+              product.buyingPrice) *
+            100
+          : 0,
     }));
   };
 
-  // ✅ Handle input change
+  // Update product status summary
+  const updateProductStatusSummary = (
+    products: typeof consignment.products
+  ) => {
+    return {
+      total: products.length,
+      delivered: products.filter((p) => p.status === "delivered").length,
+      pending: products.filter((p) => p.status === "pending").length,
+      refunded: products.filter((p) => p.status === "refunded").length,
+    };
+  };
+
+  // ✅ Handle main form changes
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    setConsignment((prev) => ({ ...prev, [name]: value }));
+    setConsignment((prev) => ({
+      ...prev,
+      [name]: name === "shippingCost" ? Number(value) : value,
+    }));
   };
 
   // ✅ Handle product changes
-
   const handleProductChange = (
     index: number,
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -119,33 +172,54 @@ const AddNewConsignment = () => {
     updatedProducts[index] = {
       ...updatedProducts[index],
       [name]:
-        name === "quantity" || name === "buyingPrice" || name === "sellingPrice"
+        name === "quantity" ||
+        name === "buyingPrice" ||
+        name === "sellingPrice" ||
+        name === "deliveredQuantity" ||
+        name === "refundedQuantity"
           ? Number(value)
           : value,
     };
 
     const productsWithTotals = calculateProductTotals(updatedProducts);
-    setConsignment((prev) => ({ ...prev, products: productsWithTotals }));
+    const productStatus = updateProductStatusSummary(productsWithTotals);
+
+    setConsignment((prev) => ({
+      ...prev,
+      products: productsWithTotals,
+      productStatus,
+    }));
   };
 
   // ✅ Add/remove product
   const addProduct = () => {
+    const newProducts = [
+      ...consignment.products,
+      {
+        category: "mobile",
+        brand: "",
+        model: "",
+        specs: "",
+        buyingPrice: 0,
+        sellingPrice: 0,
+        quantity: 1,
+        totalbuyingCost: 0,
+        totalsellingCost: 0,
+        status: "pending",
+        deliveredQuantity: 0,
+        refundedQuantity: 0,
+        profit: 0,
+        profitMargin: 0,
+      },
+    ];
+
+    const productsWithTotals = calculateProductTotals(newProducts);
+    const productStatus = updateProductStatusSummary(productsWithTotals);
+
     setConsignment((prev) => ({
       ...prev,
-      products: [
-        ...prev.products,
-        {
-          category: "mobile",
-          brand: "",
-          model: "",
-          specs: "",
-          buyingPrice: 0,
-          sellingPrice: 0,
-          quantity: 1,
-          totalbuyingCost: 0,
-          totalsellingCost: 0,
-        },
-      ],
+      products: productsWithTotals,
+      productStatus,
     }));
   };
 
@@ -153,7 +227,15 @@ const AddNewConsignment = () => {
     if (consignment.products.length === 1) return;
     const updated = [...consignment.products];
     updated.splice(index, 1);
-    setConsignment((prev) => ({ ...prev, products: updated }));
+
+    const productsWithTotals = calculateProductTotals(updated);
+    const productStatus = updateProductStatusSummary(productsWithTotals);
+
+    setConsignment((prev) => ({
+      ...prev,
+      products: productsWithTotals,
+      productStatus,
+    }));
   };
 
   // ✅ Handle transaction changes
@@ -166,7 +248,45 @@ const AddNewConsignment = () => {
     updatedTransactions[index] = {
       ...updatedTransactions[index],
       [name]: name === "amount" ? Number(value) : value,
+      addBy: user?.id || "", // Always set the current user as addBy
     };
+    setConsignment((prev) => ({ ...prev, transactions: updatedTransactions }));
+  };
+
+  // Auto-set direction and party based on transaction type
+  const handleTransactionTypeChange = (index: number, type: string) => {
+    const updatedTransactions = [...consignment.transactions];
+
+    let direction: "in" | "out" = "in";
+    let party: "customer" | "supplier" | "company" = "customer";
+
+    switch (type) {
+      case "advance":
+      case "payment":
+        direction = "in";
+        party = "customer";
+        break;
+      case "pay-out":
+        direction = "out";
+        party = "supplier";
+        break;
+      case "refund":
+        direction = "out";
+        party = "customer";
+        break;
+      case "pay-in":
+        direction = "in";
+        party = "company";
+        break;
+    }
+
+    updatedTransactions[index] = {
+      ...updatedTransactions[index],
+      type: type as any,
+      direction,
+      party,
+    };
+
     setConsignment((prev) => ({ ...prev, transactions: updatedTransactions }));
   };
 
@@ -182,7 +302,11 @@ const AddNewConsignment = () => {
           amount: 0,
           method: "cash",
           type: "advance",
+          direction: "in",
+          party: "customer",
           note: "",
+          addBy: user?.id || "",
+          status: "completed",
         },
       ],
     }));
@@ -195,23 +319,14 @@ const AddNewConsignment = () => {
     setConsignment((prev) => ({ ...prev, transactions: updated }));
   };
 
-  // ✅ Submit
+  // ✅ Submit consignment
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setMessage(null);
 
-    console.log(consignment);
-
-    consignment.totalAdvance = consignment.transactions.reduce(
-      (sum, txn) => sum + txn.amount,
-      0
-    );
-
-    consignment.totalDue = consignment.totalAmount - consignment.totalAdvance;
-
-    consignment.destination = "Bangladesh";
     try {
+      // Let the server handle the calculations via the pre-save hook
       const res = await fetch("/api/consignments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -240,15 +355,42 @@ const AddNewConsignment = () => {
     }
   };
 
+  // Calculate summary values
   const totalProductsValue = consignment.products.reduce(
     (sum, product) => sum + product.totalsellingCost,
     0
   );
-  const totalTransactions = consignment.transactions.reduce(
-    (sum, transaction) => sum + transaction.amount,
+
+  const totalProductCost = consignment.products.reduce(
+    (sum, product) => sum + product.totalbuyingCost,
     0
   );
-  const balanceDue = totalProductsValue - totalTransactions;
+
+  const customerPayments = consignment.transactions
+    .filter(
+      (t) =>
+        t.party === "customer" &&
+        t.direction === "in" &&
+        t.status === "completed"
+    )
+    .reduce((sum, transaction) => sum + transaction.amount, 0);
+
+  const supplierPayments = consignment.transactions
+    .filter(
+      (t) =>
+        t.party === "supplier" &&
+        t.direction === "out" &&
+        t.status === "completed"
+    )
+    .reduce((sum, transaction) => sum + transaction.amount, 0);
+
+  const grossProfit = totalProductsValue - totalProductCost;
+  const netProfit = grossProfit - consignment.shippingCost;
+  const profitMargin =
+    totalProductCost > 0 ? (netProfit / totalProductCost) * 100 : 0;
+
+  const balanceDue =
+    totalProductsValue + consignment.shippingCost - customerPayments;
 
   const sectionVariants = {
     hidden: { opacity: 0, x: 20 },
@@ -344,7 +486,29 @@ const AddNewConsignment = () => {
 
                       <div>
                         <label className="block text-sm font-medium text-text-secondary mb-1">
-                          Supplier ID
+                          Status
+                        </label>
+                        <select
+                          name="status"
+                          value={consignment.status}
+                          onChange={handleChange}
+                          className="input w-full bg-black"
+                          required
+                        >
+                          <option value="pending">Pending</option>
+                          <option value="in-transit">In Transit</option>
+                          <option value="delivered">Delivered</option>
+                          <option value="partially-delivered">
+                            Partially Delivered
+                          </option>
+                          <option value="cancelled">Cancelled</option>
+                          <option value="refunded">Refunded</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-text-secondary mb-1">
+                          Supplier
                         </label>
                         <select
                           name="supplier"
@@ -364,9 +528,8 @@ const AddNewConsignment = () => {
 
                       <div>
                         <label className="block text-sm font-medium text-text-secondary mb-1">
-                          Customer ID
+                          Customer
                         </label>
-
                         <select
                           name="customer"
                           value={consignment.customer}
@@ -375,7 +538,7 @@ const AddNewConsignment = () => {
                           required
                         >
                           <option value="">Select Customer</option>
-                          {customer.map((customer: any) => (
+                          {customers.map((customer: any) => (
                             <option key={customer._id} value={customer._id}>
                               {customer.name} ({customer.email})
                             </option>
@@ -389,7 +552,6 @@ const AddNewConsignment = () => {
                         </label>
                         <input
                           name="destination"
-                          placeholder="Enter destination"
                           value={consignment.destination}
                           onChange={handleChange}
                           className="input w-full"
@@ -422,6 +584,34 @@ const AddNewConsignment = () => {
                           onChange={handleChange}
                           className="input w-full"
                           required
+                          min="0"
+                          step="0.01"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-text-secondary mb-1">
+                          Shipping Date
+                        </label>
+                        <input
+                          type="date"
+                          name="shippingDate"
+                          value={consignment.shippingDate}
+                          onChange={handleChange}
+                          className="input w-full"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-text-secondary mb-1">
+                          Delivery Date
+                        </label>
+                        <input
+                          type="date"
+                          name="deliveryDate"
+                          value={consignment.deliveryDate}
+                          onChange={handleChange}
+                          className="input w-full"
                         />
                       </div>
                     </div>
@@ -497,12 +687,32 @@ const AddNewConsignment = () => {
                                 name="category"
                                 value={product.category}
                                 onChange={(e) => handleProductChange(index, e)}
-                                className="input text-sm"
+                                className="input text-sm bg-black"
+                                required
                               >
                                 <option value="mobile">Mobile</option>
                                 <option value="laptop">Laptop</option>
-                                <option value="tablet">Tablet</option>
                                 <option value="accessory">Accessory</option>
+                                <option value="other">Other</option>
+                              </select>
+                            </div>
+
+                            <div>
+                              <label className="block text-xs text-text-muted mb-1">
+                                Status
+                              </label>
+                              <select
+                                name="status"
+                                value={product.status}
+                                onChange={(e) => handleProductChange(index, e)}
+                                className="input text-sm bg-black"
+                                required
+                              >
+                                <option value="pending">Pending</option>
+                                <option value="delivered">Delivered</option>
+                                <option value="refunded">Refunded</option>
+                                <option value="returned">Returned</option>
+                                <option value="damaged">Damaged</option>
                               </select>
                             </div>
 
@@ -516,6 +726,7 @@ const AddNewConsignment = () => {
                                 value={product.brand}
                                 onChange={(e) => handleProductChange(index, e)}
                                 className="input text-sm"
+                                required
                               />
                             </div>
 
@@ -529,6 +740,7 @@ const AddNewConsignment = () => {
                                 value={product.model}
                                 onChange={(e) => handleProductChange(index, e)}
                                 className="input text-sm"
+                                required
                               />
                             </div>
 
@@ -543,6 +755,37 @@ const AddNewConsignment = () => {
                                 onChange={(e) => handleProductChange(index, e)}
                                 className="input text-sm"
                                 min="1"
+                                required
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block text-xs text-text-muted mb-1">
+                                Delivered Qty
+                              </label>
+                              <input
+                                name="deliveredQuantity"
+                                type="number"
+                                value={product.deliveredQuantity}
+                                onChange={(e) => handleProductChange(index, e)}
+                                className="input text-sm"
+                                min="0"
+                                max={product.quantity}
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block text-xs text-text-muted mb-1">
+                                Refunded Qty
+                              </label>
+                              <input
+                                name="refundedQuantity"
+                                type="number"
+                                value={product.refundedQuantity}
+                                onChange={(e) => handleProductChange(index, e)}
+                                className="input text-sm"
+                                min="0"
+                                max={product.quantity}
                               />
                             </div>
 
@@ -557,6 +800,8 @@ const AddNewConsignment = () => {
                                 value={product.buyingPrice}
                                 onChange={(e) => handleProductChange(index, e)}
                                 className="input text-sm"
+                                required
+                                min="0"
                               />
                             </div>
 
@@ -571,6 +816,8 @@ const AddNewConsignment = () => {
                                 value={product.sellingPrice}
                                 onChange={(e) => handleProductChange(index, e)}
                                 className="input text-sm"
+                                required
+                                min="0"
                               />
                             </div>
 
@@ -580,8 +827,9 @@ const AddNewConsignment = () => {
                               </label>
                               <input
                                 type="text"
-                                value={`$${product.totalbuyingCost}`}
+                                value={`$${product.totalbuyingCost.toFixed(2)}`}
                                 className="input text-sm bg-accent"
+                                readOnly
                               />
                             </div>
 
@@ -591,8 +839,56 @@ const AddNewConsignment = () => {
                               </label>
                               <input
                                 type="text"
-                                value={`$${product.totalsellingCost}`}
+                                value={`$${product.totalsellingCost.toFixed(
+                                  2
+                                )}`}
                                 className="input text-sm bg-accent"
+                                readOnly
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block text-xs text-text-muted mb-1">
+                                Profit
+                              </label>
+                              <input
+                                type="text"
+                                value={`$${product.profit.toFixed(2)}`}
+                                className={`input text-sm ${
+                                  product.profit >= 0
+                                    ? "bg-action/10"
+                                    : "bg-danger/10"
+                                }`}
+                                readOnly
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block text-xs text-text-muted mb-1">
+                                Profit Margin
+                              </label>
+                              <input
+                                type="text"
+                                value={`${product.profitMargin.toFixed(1)}%`}
+                                className={`input text-sm ${
+                                  product.profitMargin >= 0
+                                    ? "bg-action/10"
+                                    : "bg-danger/10"
+                                }`}
+                                readOnly
+                              />
+                            </div>
+
+                            <div className="lg:col-span-4">
+                              <label className="block text-xs text-text-muted mb-1">
+                                Specifications
+                              </label>
+                              <textarea
+                                name="specs"
+                                placeholder="Product specifications"
+                                value={product.specs}
+                                onChange={(e) => handleProductChange(index, e)}
+                                className="input h-20 text-sm w-full"
                               />
                             </div>
                           </div>
@@ -657,6 +953,16 @@ const AddNewConsignment = () => {
                           <div className="flex items-center justify-between mb-3">
                             <h3 className="font-medium text-text-primary">
                               Transaction {index + 1}
+                              <span
+                                className={`ml-2 text-xs px-2 py-1 rounded-full ${
+                                  transaction.direction === "in"
+                                    ? "bg-action/10 text-action"
+                                    : "bg-danger/10 text-danger"
+                                }`}
+                              >
+                                {transaction.direction === "in" ? "IN" : "OUT"}{" "}
+                                - {transaction.party}
+                              </span>
                             </h3>
                             {consignment.transactions.length > 1 && (
                               <button
@@ -681,6 +987,7 @@ const AddNewConsignment = () => {
                                   handleTransactionChange(index, e)
                                 }
                                 className="input text-sm"
+                                required
                               />
                             </div>
 
@@ -696,6 +1003,7 @@ const AddNewConsignment = () => {
                                   handleTransactionChange(index, e)
                                 }
                                 className="input text-sm"
+                                required
                               />
                             </div>
 
@@ -712,6 +1020,8 @@ const AddNewConsignment = () => {
                                   handleTransactionChange(index, e)
                                 }
                                 className="input text-sm"
+                                required
+                                min="0"
                               />
                             </div>
 
@@ -725,12 +1035,14 @@ const AddNewConsignment = () => {
                                 onChange={(e) =>
                                   handleTransactionChange(index, e)
                                 }
-                                className="input text-sm"
+                                className="input text-sm bg-black"
+                                required
                               >
                                 <option value="cash">Cash</option>
                                 <option value="bank">Bank Transfer</option>
                                 <option value="card">Card</option>
                                 <option value="mobile">Mobile Payment</option>
+                                <option value="other">Other</option>
                               </select>
                             </div>
 
@@ -742,17 +1054,42 @@ const AddNewConsignment = () => {
                                 name="type"
                                 value={transaction.type}
                                 onChange={(e) =>
-                                  handleTransactionChange(index, e)
+                                  handleTransactionTypeChange(
+                                    index,
+                                    e.target.value
+                                  )
                                 }
-                                className="input text-sm"
+                                className="input text-sm bg-black"
+                                required
                               >
                                 <option value="advance">Advance</option>
                                 <option value="payment">Payment</option>
                                 <option value="refund">Refund</option>
+                                <option value="pay-in">Pay In</option>
+                                <option value="pay-out">Pay Out</option>
                               </select>
                             </div>
 
-                            <div className="lg:col-span-2">
+                            <div>
+                              <label className="block text-xs text-text-muted mb-1">
+                                Status
+                              </label>
+                              <select
+                                name="status"
+                                value={transaction.status}
+                                onChange={(e) =>
+                                  handleTransactionChange(index, e)
+                                }
+                                className="input text-sm bg-black"
+                                required
+                              >
+                                <option value="pending">Pending</option>
+                                <option value="completed">Completed</option>
+                                <option value="failed">Failed</option>
+                              </select>
+                            </div>
+
+                            <div className="lg:col-span-3">
                               <label className="block text-xs text-text-muted mb-1">
                                 Notes
                               </label>
@@ -831,13 +1168,8 @@ const AddNewConsignment = () => {
                       Products Value
                     </h4>
                     <div className="text-2xl font-bold text-text-primary">
-                      ${totalProductsValue}
+                      ${totalProductsValue.toFixed(2)}
                     </div>
-                    <input
-                      type="number"
-                      value={(consignment.totalAmount = totalProductsValue)}
-                      className="text-2xl font-bold text-text-primary"
-                    />
                     <p className="text-xs text-text-muted mt-1">
                       {consignment.products.length} product(s)
                     </p>
@@ -845,13 +1177,65 @@ const AddNewConsignment = () => {
 
                   <div>
                     <h4 className="text-sm font-medium text-text-secondary mb-2">
-                      Transactions
+                      Product Cost
                     </h4>
                     <div className="text-xl font-semibold text-text-primary">
-                      ${totalTransactions}
+                      ${totalProductCost.toFixed(2)}
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 className="text-sm font-medium text-text-secondary mb-2">
+                      Shipping Cost
+                    </h4>
+                    <div className="text-xl font-semibold text-text-primary">
+                      ${consignment.shippingCost.toFixed(2)}
+                    </div>
+                  </div>
+
+                  <div className="border-t border-border pt-4">
+                    <h4 className="text-sm font-medium text-text-secondary mb-2">
+                      Total Amount
+                    </h4>
+                    <div className="text-xl font-bold text-primary">
+                      $
+                      {(totalProductsValue + consignment.shippingCost).toFixed(
+                        2
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 className="text-sm font-medium text-text-secondary mb-2">
+                      Customer Payments
+                    </h4>
+                    <div className="text-xl font-semibold text-text-primary">
+                      ${customerPayments.toFixed(2)}
                     </div>
                     <p className="text-xs text-text-muted mt-1">
-                      {consignment.transactions.length} transaction(s)
+                      {
+                        consignment.transactions.filter(
+                          (t) => t.party === "customer" && t.direction === "in"
+                        ).length
+                      }{" "}
+                      transaction(s)
+                    </p>
+                  </div>
+
+                  <div>
+                    <h4 className="text-sm font-medium text-text-secondary mb-2">
+                      Supplier Payments
+                    </h4>
+                    <div className="text-xl font-semibold text-text-primary">
+                      ${supplierPayments.toFixed(2)}
+                    </div>
+                    <p className="text-xs text-text-muted mt-1">
+                      {
+                        consignment.transactions.filter(
+                          (t) => t.party === "supplier" && t.direction === "out"
+                        ).length
+                      }{" "}
+                      transaction(s)
                     </p>
                   </div>
 
@@ -864,21 +1248,84 @@ const AddNewConsignment = () => {
                         balanceDue > 0 ? "text-warning" : "text-action"
                       }`}
                     >
-                      ${Math.abs(balanceDue)}
+                      ${Math.abs(balanceDue).toFixed(2)}
                     </div>
                     <p className="text-xs text-text-muted mt-1">
                       {balanceDue > 0
                         ? "Amount due from customer"
-                        : "Overpayment"}
+                        : balanceDue < 0
+                        ? "Overpayment"
+                        : "Fully paid"}
                     </p>
                   </div>
 
                   <div className="bg-accent rounded-lg p-3">
                     <h4 className="text-sm font-medium text-text-primary mb-1">
-                      Shipping Cost
+                      Profit Summary
                     </h4>
-                    <div className="text-lg font-semibold text-text-primary">
-                      ${consignment.shippingCost}
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-sm">
+                        <span>Gross Profit:</span>
+                        <span
+                          className={`font-semibold ${
+                            grossProfit >= 0 ? "text-action" : "text-danger"
+                          }`}
+                        >
+                          ${grossProfit.toFixed(2)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span>Net Profit:</span>
+                        <span
+                          className={`font-semibold ${
+                            netProfit >= 0 ? "text-action" : "text-danger"
+                          }`}
+                        >
+                          ${netProfit.toFixed(2)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span>Profit Margin:</span>
+                        <span
+                          className={`font-semibold ${
+                            profitMargin >= 0 ? "text-action" : "text-danger"
+                          }`}
+                        >
+                          {profitMargin.toFixed(1)}%
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-accent rounded-lg p-3">
+                    <h4 className="text-sm font-medium text-text-primary mb-1">
+                      Product Status
+                    </h4>
+                    <div className="space-y-1 text-sm">
+                      <div className="flex justify-between">
+                        <span>Total:</span>
+                        <span className="font-semibold">
+                          {consignment.productStatus.total}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Delivered:</span>
+                        <span className="font-semibold text-action">
+                          {consignment.productStatus.delivered}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Pending:</span>
+                        <span className="font-semibold text-warning">
+                          {consignment.productStatus.pending}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Refunded:</span>
+                        <span className="font-semibold text-danger">
+                          {consignment.productStatus.refunded}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>

@@ -1,18 +1,21 @@
 import { Types } from "mongoose";
 
-// ✅ Transaction inside a consignment
+// ✅ Enhanced Transaction inside a consignment
 export interface TTransaction {
   _id?: string;
-  transactionId: string; // Unique reference (e.g., TRX-2025-0001)
+  transactionId: string;
   date: Date;
   amount: number;
   method: "cash" | "bank" | "mobile" | "card" | "other";
-  type: "advance" | "payment" | "refund";
+  type: "advance" | "payment" | "refund" | "pay-in" | "pay-out";
+  direction: "in" | "out";
+  party: "customer" | "supplier" | "company";
   note?: string;
-  receivedBy?: Types.ObjectId; // who handled it (e.g., admin or user)
+  addBy?: Types.ObjectId;
+  status?: "pending" | "completed" | "failed";
 }
 
-// ✅ Product details inside a consignment
+// ✅ Enhanced Product details inside a consignment
 export interface TConsignmentProduct {
   category: "mobile" | "laptop" | "accessory" | "other";
   brand: string;
@@ -23,27 +26,111 @@ export interface TConsignmentProduct {
   quantity: number;
   totalbuyingCost?: number;
   totalsellingCost?: number;
-  isRefunded: boolean;
+  status: "pending" | "delivered" | "refunded" | "returned" | "damaged";
+  deliveredQuantity?: number;
+  refundedQuantity?: number;
+  profit?: number;
+  profitMargin?: number;
 }
 
-// ✅ Main Consignment
+// ✅ Product Status Summary
+export interface TProductStatus {
+  total: number;
+  delivered: number;
+  pending: number;
+  refunded: number;
+}
+
+// ✅ Main Consignment - Enhanced with profit/loss tracking
 export interface TConsignment {
   _id?: string;
   consignmentId: string;
-  admin: Types.ObjectId; // admin add this consignment
+  admin: Types.ObjectId; // admin who added this consignment
   supplier: Types.ObjectId; // user who supplied goods
   customer: Types.ObjectId; // user receiving goods
   products: TConsignmentProduct[];
-  transactions: TTransaction[]; // 💰 New field for all payments
+  transactions: TTransaction[];
   startDate: Date;
   shippingDate?: Date;
   deliveryDate?: Date;
   shippingCost: number;
+
+  // Financial totals
   totalAmount: number; // total selling cost + shipping
   totalAdvance: number; // total paid from transactions (advance)
   totalDue: number; // totalAmount - totalAdvance
-  status: "pending" | "in-transit" | "delivered" | "cancelled";
+
+  // Cost breakdown
+  totalProductCost: number;
+  totalSellingPrice: number;
+
+  // Profit/Loss tracking
+  grossProfit?: number;
+  netProfit?: number;
+  profitMargin?: number;
+
+  // Payment tracking
+  totalReceived?: number;
+  totalPaid?: number;
+
+  status:
+    | "pending"
+    | "in-transit"
+    | "delivered"
+    | "cancelled"
+    | "partially-delivered"
+    | "refunded";
   destination: string;
+
+  // Product status summary
+  productStatus?: TProductStatus;
+
+  // Timestamps
   createdAt?: Date;
   updatedAt?: Date;
+}
+
+// ✅ Profit Summary Interface
+export interface TProfitSummary {
+  grossProfit: number;
+  netProfit: number;
+  profitMargin: number;
+  totalRevenue: number;
+  totalCost: number;
+  shippingCost: number;
+}
+
+// ✅ Financial Report Interface
+export interface TFinancialReport {
+  totalRevenue: number;
+  totalCost: number;
+  totalShipping: number;
+  totalNetProfit: number;
+  totalGrossProfit: number;
+  totalReceived: number;
+  totalDue: number;
+  count: number;
+}
+
+// ✅ Methods Interfaces
+export interface TConsignmentMethods {
+  updateProductStatus(
+    productIndex: number,
+    status: TConsignmentProduct["status"],
+    quantity?: number
+  ): Promise<TConsignment>;
+  addTransaction(
+    transactionData: Omit<TTransaction, "_id">
+  ): Promise<TConsignment>;
+  getProfitSummary(): TProfitSummary;
+  updateConsignmentStatus(): void;
+}
+
+// ✅ Static Methods Interface
+export interface TConsignmentStatics {
+  getFinancialReport(
+    adminId: string,
+    startDate?: Date,
+    endDate?: Date
+  ): Promise<TFinancialReport>;
 }
