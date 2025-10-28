@@ -4,25 +4,18 @@ import { useEffect, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   RiLoader2Line,
-  RiEditLine,
-  RiDeleteBinLine,
   RiUserLine,
   RiMailLine,
   RiPhoneLine,
   RiCalendarLine,
-  RiToggleLine,
-  RiToggleFill,
   RiCloseLine,
   RiSearchLine,
-  RiFilterLine,
   RiArrowRightLine,
-  RiMoneyDollarCircleLine,
   RiMapPinLine,
-  RiCheckboxCircleLine,
-  RiCloseCircleLine,
 } from "react-icons/ri";
 import { PiPackageLight } from "react-icons/pi";
 import { BiDetail } from "react-icons/bi";
+import Link from "next/link";
 
 const CustomersTable = () => {
   const [customers, setCustomers] = useState<any[]>([]);
@@ -32,7 +25,6 @@ const CustomersTable = () => {
   const [loadingConsignments, setLoadingConsignments] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
 
   // ✅ Fetch Customers
   useEffect(() => {
@@ -67,6 +59,7 @@ const CustomersTable = () => {
   };
 
   // ✅ Open Drawer
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleOpenDrawer = useCallback((customer: any) => {
     setSelectedCustomer(customer);
     setDrawerOpen(true);
@@ -118,6 +111,7 @@ const CustomersTable = () => {
     );
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const getConsignmentStats = (consignments: any[]) => {
     return {
       total: consignments.length,
@@ -571,6 +565,13 @@ const CustomersTable = () => {
                             >
                               {getStatusBadge(consignment.status).label}
                             </span>
+                            <motion.button className="p-1 bg-primary rounded mx-2">
+                              <Link
+                                href={`/dashbord/consignments/${consignment._id}`}
+                              >
+                                <BiDetail />
+                              </Link>
+                            </motion.button>
                           </div>
 
                           <div className="flex items-center justify-between text-xs text-text-secondary">
