@@ -23,7 +23,6 @@ export async function GET(req: Request) {
   await dbConnect();
 
   try {
-    console.log("hist on get consignment api");
     const { searchParams } = new URL(req.url);
 
     // ✅ Extract filters from query params

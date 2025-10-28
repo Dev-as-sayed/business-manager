@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { BiPlus, BiSearch, BiFilter, BiRefresh } from "react-icons/bi";
 import {
@@ -32,6 +32,9 @@ const ConsignmentsManagement = () => {
     destination: "",
   });
   const [showFilters, setShowFilters] = useState(false);
+  const searchParams = useSearchParams();
+  const role = searchParams.get("role");
+  const id = searchParams.get("id");
 
   // ✅ Fetch consignments
   const fetchConsignments = async () => {
@@ -45,6 +48,27 @@ const ConsignmentsManagement = () => {
       if (searchTerm) query.append("search", searchTerm);
 
       const res = await fetch(`/api/consignments?${query.toString()}`);
+      const data = await res.json();
+      setConsignments(data.consignments || []);
+    } catch (error) {
+      console.error("Error fetching consignments:", error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    if (role && id) {
+      refetchConsignments(role, id);
+    }
+  }, [role, id]);
+
+  const refetchConsignments = async (role: string, id: string) => {
+    try {
+      setLoading(true);
+
+      const res = await fetch(`/api/consignments/users?role=${role}&id=${id}`);
       const data = await res.json();
       setConsignments(data.consignments || []);
     } catch (error) {
