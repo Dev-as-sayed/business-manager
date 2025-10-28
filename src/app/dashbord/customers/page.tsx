@@ -522,7 +522,7 @@ const CustomersTable = () => {
                             {getConsignmentStats(consignments).total}
                           </div>
                           <div className="text-xs text-text-secondary">
-                            Total
+                            Total Shipments
                           </div>
                         </div>
                         <div className="bg-accent rounded-lg p-3 text-center">
@@ -534,6 +534,26 @@ const CustomersTable = () => {
                           </div>
                           <div className="text-xs text-text-secondary">
                             Total Value
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Status Distribution */}
+                      <div className="grid grid-cols-3 gap-2 mb-4">
+                        <div className="text-center">
+                          <div className="text-lg font-bold text-amber-600">
+                            {getConsignmentStats(consignments).pending}
+                          </div>
+                          <div className="text-xs text-text-secondary">
+                            Pending
+                          </div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-lg font-bold text-green-600">
+                            {getConsignmentStats(consignments).delivered}
+                          </div>
+                          <div className="text-xs text-text-secondary">
+                            Delivered
                           </div>
                         </div>
                       </div>
