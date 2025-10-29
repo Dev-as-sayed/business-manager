@@ -8,6 +8,7 @@ import { BiEdit } from "react-icons/bi";
 import { BsTrash2 } from "react-icons/bs";
 import { RiRefundFill } from "react-icons/ri";
 import { HiReceiptRefund } from "react-icons/hi";
+import { FaMoneyBillWave, FaShippingFast } from "react-icons/fa";
 
 type User = { _id: string; name: string; email: string };
 type Transaction = {
@@ -16,8 +17,11 @@ type Transaction = {
   amount: number;
   method: string;
   type: string;
+  direction: "in" | "out";
+  party: "customer" | "supplier" | "company";
   note?: string;
-  receivedBy?: string;
+  addBy?: string;
+  status: string;
 };
 type Product = {
   category: string;
@@ -29,6 +33,11 @@ type Product = {
   sellingPrice: number;
   totalbuyingCost: number;
   totalsellingCost: number;
+  status: "delivered" | "pending" | "refund";
+  deliveredQuantity?: number;
+  refundedQuantity?: number;
+  profit?: number;
+  profitMargin?: number;
 };
 type Consignment = {
   _id: string;
@@ -44,8 +53,21 @@ type Consignment = {
   totalAmount: number;
   totalAdvance: number;
   totalDue: number;
+  totalProductCost: number;
+  totalSellingPrice: number;
+  grossProfit: number;
+  netProfit: number;
+  profitMargin: number;
+  totalReceived: number;
+  totalPaid: number;
   status: string;
   destination: string;
+  productStatus?: {
+    total: number;
+    delivered: number;
+    pending: number;
+    refunded: number;
+  };
 };
 
 // Modal Components
@@ -165,7 +187,9 @@ const EditConsignmentModal = ({
               <option value="pending">Pending</option>
               <option value="in-transit">In Transit</option>
               <option value="delivered">Delivered</option>
+              <option value="partially-delivered">Partially Delivered</option>
               <option value="cancelled">Cancelled</option>
+              <option value="refunded">Refunded</option>
             </select>
           </div>
 
@@ -224,6 +248,7 @@ const AddProductModal = ({
     quantity: 1,
     buyingPrice: 0,
     sellingPrice: 0,
+    status: "pending" as "delivered" | "pending" | "refund",
   });
   const [loading, setLoading] = useState(false);
   const { id } = useParams();
@@ -232,11 +257,13 @@ const AddProductModal = ({
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch(`/api/consignments/${id}/products`, {
+      const res = await fetch(`/api/consignments/${id}/product`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
+
+      console.log(JSON.stringify(formData));
 
       if (res.ok) {
         onAdd();
@@ -273,6 +300,23 @@ const AddProductModal = ({
               <option value="laptop">Laptop</option>
               <option value="accessory">Accessory</option>
               <option value="other">Other</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-text-primary mb-1">
+              Status
+            </label>
+            <select
+              value={formData.status}
+              onChange={(e) =>
+                setFormData({ ...formData, status: e.target.value as any })
+              }
+              className="w-full p-2 border border-border rounded focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              <option value="pending">Pending</option>
+              <option value="delivered">Delivered</option>
+              <option value="refund">Refund</option>
             </select>
           </div>
 
@@ -426,6 +470,9 @@ const EditProductModal = ({
     quantity: product.quantity,
     buyingPrice: product.buyingPrice,
     sellingPrice: product.sellingPrice,
+    status: product.status,
+    deliveredQuantity: product.deliveredQuantity || 0,
+    refundedQuantity: product.refundedQuantity || 0,
   });
   const [loading, setLoading] = useState(false);
   const { id } = useParams();
@@ -460,7 +507,6 @@ const EditProductModal = ({
       <div className="bg-background p-6 rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
         <h2 className="text-xl font-semibold mb-4">Edit Product</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Same form fields as AddProductModal but with current values */}
           <div>
             <label className="block text-sm font-medium text-text-primary mb-1">
               Category
@@ -476,6 +522,23 @@ const EditProductModal = ({
               <option value="laptop">Laptop</option>
               <option value="accessory">Accessory</option>
               <option value="other">Other</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-text-primary mb-1">
+              Status
+            </label>
+            <select
+              value={formData.status}
+              onChange={(e) =>
+                setFormData({ ...formData, status: e.target.value as any })
+              }
+              className="w-full p-2 border border-border rounded focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              <option value="pending">Pending</option>
+              <option value="delivered">Delivered</option>
+              <option value="refund">Refund</option>
             </select>
           </div>
 
@@ -564,6 +627,46 @@ const EditProductModal = ({
             </div>
           </div>
 
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-text-primary mb-1">
+                Delivered Qty
+              </label>
+              <input
+                type="number"
+                min="0"
+                max={formData.quantity}
+                value={formData.deliveredQuantity}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    deliveredQuantity: parseInt(e.target.value),
+                  })
+                }
+                className="w-full p-2 border border-border rounded focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-text-primary mb-1">
+                Refunded Qty
+              </label>
+              <input
+                type="number"
+                min="0"
+                max={formData.quantity}
+                value={formData.refundedQuantity}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    refundedQuantity: parseInt(e.target.value),
+                  })
+                }
+                className="w-full p-2 border border-border rounded focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+          </div>
+
           <div>
             <label className="block text-sm font-medium text-text-primary mb-1">
               Selling Price
@@ -610,7 +713,7 @@ const EditProductModal = ({
   );
 };
 
-const AddPaymentModal = ({
+const AddTransactionModal = ({
   onClose,
   onAdd,
 }: {
@@ -622,17 +725,53 @@ const AddPaymentModal = ({
     date: new Date().toISOString().split("T")[0],
     amount: 0,
     method: "cash",
-    type: "payment",
+    type: "advance",
+    direction: "in" as "in" | "out",
+    party: "customer" as "customer" | "supplier" | "company",
     note: "",
+    status: "completed",
   });
   const [loading, setLoading] = useState(false);
   const { id } = useParams();
+
+  // Auto-set direction and party based on transaction type
+  const handleTypeChange = (type: string) => {
+    let direction: "in" | "out" = "in";
+    let party: "customer" | "supplier" | "company" = "customer";
+
+    switch (type) {
+      case "advance":
+      case "payment":
+        direction = "in";
+        party = "customer";
+        break;
+      case "pay-out":
+        direction = "out";
+        party = "supplier";
+        break;
+      case "refund":
+        direction = "out";
+        party = "customer";
+        break;
+      case "pay-in":
+        direction = "in";
+        party = "company";
+        break;
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      type,
+      direction,
+      party,
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch(`/api/consignments/${id}/payments`, {
+      const res = await fetch(`/api/consignments/${id}/transactions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -643,11 +782,11 @@ const AddPaymentModal = ({
         onClose();
       } else {
         const data = await res.json();
-        alert(data.message || "Failed to add payment");
+        alert(data.message || "Failed to add transaction");
       }
     } catch (error) {
-      console.error("Add payment error:", error);
-      alert("Failed to add payment");
+      console.error("Add transaction error:", error);
+      alert("Failed to add transaction");
     } finally {
       setLoading(false);
     }
@@ -656,7 +795,7 @@ const AddPaymentModal = ({
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-background p-6 rounded-lg w-full max-w-md">
-        <h2 className="text-xl font-semibold mb-4">Add Payment</h2>
+        <h2 className="text-xl font-semibold mb-4">Add Transaction</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-text-primary mb-1">
@@ -731,15 +870,44 @@ const AddPaymentModal = ({
               </label>
               <select
                 value={formData.type}
-                onChange={(e) =>
-                  setFormData({ ...formData, type: e.target.value })
-                }
+                onChange={(e) => handleTypeChange(e.target.value)}
                 className="w-full p-2 border border-border rounded focus:outline-none focus:ring-2 focus:ring-primary"
               >
                 <option value="advance">Advance</option>
                 <option value="payment">Payment</option>
                 <option value="refund">Refund</option>
+                <option value="pay-in">Pay In</option>
+                <option value="pay-out">Pay Out</option>
               </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-text-primary mb-1">
+                Direction
+              </label>
+              <input
+                type="text"
+                value={formData.direction.toUpperCase()}
+                className="w-full p-2 border border-border rounded bg-accent"
+                readOnly
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-text-primary mb-1">
+                Party
+              </label>
+              <input
+                type="text"
+                value={
+                  formData.party.charAt(0).toUpperCase() +
+                  formData.party.slice(1)
+                }
+                className="w-full p-2 border border-border rounded bg-accent"
+                readOnly
+              />
             </div>
           </div>
 
@@ -773,7 +941,7 @@ const AddPaymentModal = ({
               {loading ? (
                 <TbLoader2 className="w-4 h-4 animate-spin" />
               ) : (
-                "Add Payment"
+                "Add Transaction"
               )}
             </button>
           </div>
@@ -795,7 +963,7 @@ const ConsignmentDetails = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showAddProductModal, setShowAddProductModal] = useState(false);
   const [showEditProductModal, setShowEditProductModal] = useState(false);
-  const [showAddPaymentModal, setShowAddPaymentModal] = useState(false);
+  const [showAddTransactionModal, setShowAddTransactionModal] = useState(false);
   const [editingProductIndex, setEditingProductIndex] = useState<number>(-1);
 
   // ✅ Fetch single consignment
@@ -844,16 +1012,90 @@ const ConsignmentDetails = () => {
         return "bg-primary/20 text-primary border border-primary/30";
       case "delivered":
         return "bg-action/20 text-action border border-action/30";
+      case "partially-delivered":
+        return "bg-warning/20 text-warning border border-warning/30";
       case "cancelled":
+        return "bg-danger/20 text-danger border border-danger/30";
+      case "refunded":
         return "bg-danger/20 text-danger border border-danger/30";
       default:
         return "bg-text-muted/20 text-text-muted border border-text-muted/30";
     }
   };
 
+  const getProductStatusBadgeClass = (status: string) => {
+    switch (status) {
+      case "delivered":
+        return "bg-action/20 text-action border border-action/30";
+      case "pending":
+        return "bg-warning/20 text-warning border border-warning/30";
+      case "refund":
+        return "bg-danger/20 text-danger border border-danger/30";
+      default:
+        return "bg-text-muted/20 text-text-muted border border-text-muted/30";
+    }
+  };
+
+  const getTransactionBadgeClass = (direction: string, party: string) => {
+    if (direction === "in") {
+      return "bg-action/20 text-action border border-action/30";
+    } else {
+      if (party === "customer") {
+        return "bg-warning/20 text-warning border border-warning/30";
+      } else {
+        return "bg-danger/20 text-danger border border-danger/30";
+      }
+    }
+  };
+
   const handleEditProduct = (index: number) => {
     setEditingProductIndex(index);
     setShowEditProductModal(true);
+  };
+
+  // Calculate payment summaries
+  const calculatePaymentSummaries = () => {
+    if (!consignment) return null;
+
+    const customerPayments = consignment.transactions
+      .filter(
+        (t) =>
+          t.party === "customer" &&
+          t.direction === "in" &&
+          t.status === "completed"
+      )
+      .reduce((sum, t) => sum + t.amount, 0);
+
+    const supplierPayments = consignment.transactions
+      .filter(
+        (t) =>
+          t.party === "supplier" &&
+          t.direction === "out" &&
+          t.status === "completed"
+      )
+      .reduce((sum, t) => sum + t.amount, 0);
+
+    const customerRefunds = consignment.transactions
+      .filter(
+        (t) =>
+          t.party === "customer" &&
+          t.direction === "out" &&
+          t.status === "completed"
+      )
+      .reduce((sum, t) => sum + t.amount, 0);
+
+    const totalReceived = customerPayments;
+    const totalPaid = supplierPayments + customerRefunds;
+    const netCashFlow = totalReceived - totalPaid;
+
+    return {
+      customerPayments,
+      supplierPayments,
+      customerRefunds,
+      totalReceived,
+      totalPaid,
+      netCashFlow,
+    };
   };
 
   if (loading)
@@ -870,6 +1112,8 @@ const ConsignmentDetails = () => {
         Consignment not found
       </div>
     );
+
+  const paymentSummaries = calculatePaymentSummaries();
 
   return (
     <div className="p-6 space-y-8 bg-background min-h-screen">
@@ -902,6 +1146,95 @@ const ConsignmentDetails = () => {
           </button>
         </div>
       </div>
+
+      {/* Financial Summary Cards */}
+      {paymentSummaries && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Customer Payments */}
+          <div className="card bg-action/5 border-action/20">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-action/20">
+                <FaMoneyBillWave className="w-5 h-5 text-action" />
+              </div>
+              <div>
+                <p className="text-sm text-text-secondary">Customer Payments</p>
+                <p className="text-xl font-bold text-action">
+                  ${paymentSummaries.customerPayments.toFixed(2)}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Supplier Payments */}
+          <div className="card bg-warning/5 border-warning/20">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-warning/20">
+                <FaShippingFast className="w-5 h-5 text-warning" />
+              </div>
+              <div>
+                <p className="text-sm text-text-secondary">Supplier Payments</p>
+                <p className="text-xl font-bold text-warning">
+                  ${paymentSummaries.supplierPayments.toFixed(2)}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Customer Refunds */}
+          <div className="card bg-danger/5 border-danger/20">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-danger/20">
+                <RiRefundFill className="w-5 h-5 text-danger" />
+              </div>
+              <div>
+                <p className="text-sm text-text-secondary">Customer Refunds</p>
+                <p className="text-xl font-bold text-danger">
+                  ${paymentSummaries.customerRefunds.toFixed(2)}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Net Cash Flow */}
+          <div
+            className={`card ${
+              paymentSummaries.netCashFlow >= 0
+                ? "bg-action/5 border-action/20"
+                : "bg-danger/5 border-danger/20"
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <div
+                className={`p-2 rounded-lg ${
+                  paymentSummaries.netCashFlow >= 0
+                    ? "bg-action/20"
+                    : "bg-danger/20"
+                }`}
+              >
+                <FaMoneyBillWave
+                  className={`w-5 h-5 ${
+                    paymentSummaries.netCashFlow >= 0
+                      ? "text-action"
+                      : "text-danger"
+                  }`}
+                />
+              </div>
+              <div>
+                <p className="text-sm text-text-secondary">Net Cash Flow</p>
+                <p
+                  className={`text-xl font-bold ${
+                    paymentSummaries.netCashFlow >= 0
+                      ? "text-action"
+                      : "text-danger"
+                  }`}
+                >
+                  ${paymentSummaries.netCashFlow.toFixed(2)}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Basic Info */}
       <div className="card space-y-3">
@@ -980,16 +1313,25 @@ const ConsignmentDetails = () => {
                   Model
                 </th>
                 <th className="p-3 text-text-primary font-semibold text-left">
-                  Specs
+                  Status
                 </th>
                 <th className="p-3 text-text-primary font-semibold text-left">
                   Qty
+                </th>
+                <th className="p-3 text-text-primary font-semibold text-left">
+                  Delivered
+                </th>
+                <th className="p-3 text-text-primary font-semibold text-left">
+                  Refunded
                 </th>
                 <th className="p-3 text-text-primary font-semibold text-left">
                   Buying
                 </th>
                 <th className="p-3 text-text-primary font-semibold text-left">
                   Selling
+                </th>
+                <th className="p-3 text-text-primary font-semibold text-left">
+                  Profit
                 </th>
                 <th className="p-3 text-text-primary font-semibold text-left">
                   Total
@@ -1007,24 +1349,45 @@ const ConsignmentDetails = () => {
                       onClick={() => handleEditProduct(i)}
                       className="text-primary hover:text-primary-hover transition-colors"
                     >
-                      <BiEdit className="w-8 h-8" />
-                    </button>
-                    <button
-                      onClick={() => handleEditProduct(i)}
-                      className="text-primary hover:text-primary-hover transition-colors"
-                    >
-                      <HiReceiptRefund className="w-8 h-8" />
+                      <BiEdit className="w-4 h-4" />
                     </button>
                   </td>
-                  <td className="p-3 text-text-secondary">{p.category}</td>
+                  <td className="p-3 text-text-secondary capitalize">
+                    {p.category}
+                  </td>
                   <td className="p-3 text-text-secondary">{p.brand}</td>
                   <td className="p-3 text-text-secondary">{p.model}</td>
-                  <td className="p-3 text-text-muted">{p.specs || "—"}</td>
+                  <td className="p-3">
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-semibold capitalize ${getProductStatusBadgeClass(
+                        p.status
+                      )}`}
+                    >
+                      {p.status}
+                    </span>
+                  </td>
                   <td className="p-3 text-text-secondary">{p.quantity}</td>
-                  <td className="p-3 text-text-secondary">${p.buyingPrice}</td>
-                  <td className="p-3 text-text-secondary">${p.sellingPrice}</td>
+                  <td className="p-3 text-text-secondary">
+                    {p.deliveredQuantity || 0}
+                  </td>
+                  <td className="p-3 text-text-secondary">
+                    {p.refundedQuantity || 0}
+                  </td>
+                  <td className="p-3 text-text-secondary">
+                    ${p.buyingPrice.toFixed(2)}
+                  </td>
+                  <td className="p-3 text-text-secondary">
+                    ${p.sellingPrice.toFixed(2)}
+                  </td>
+                  <td
+                    className={`p-3 font-semibold ${
+                      (p.profit || 0) >= 0 ? "text-action" : "text-danger"
+                    }`}
+                  >
+                    ${(p.profit || 0).toFixed(2)}
+                  </td>
                   <td className="p-3 font-semibold text-text-primary">
-                    ${p.totalsellingCost}
+                    ${p.totalsellingCost.toFixed(2)}
                   </td>
                 </tr>
               ))}
@@ -1040,10 +1403,10 @@ const ConsignmentDetails = () => {
             Transactions ({consignment.transactions.length})
           </h2>
           <button
-            onClick={() => setShowAddPaymentModal(true)}
+            onClick={() => setShowAddTransactionModal(true)}
             className="btn-primary text-sm flex items-center gap-1"
           >
-            <BiEdit className="w-4 h-4" /> Add Payment
+            <BiEdit className="w-4 h-4" /> Add Transaction
           </button>
         </div>
         <div className="overflow-x-auto">
@@ -1058,6 +1421,12 @@ const ConsignmentDetails = () => {
                 </th>
                 <th className="p-3 text-text-primary font-semibold text-left">
                   Type
+                </th>
+                <th className="p-3 text-text-primary font-semibold text-left">
+                  Direction
+                </th>
+                <th className="p-3 text-text-primary font-semibold text-left">
+                  Party
                 </th>
                 <th className="p-3 text-text-primary font-semibold text-left">
                   Method
@@ -1083,10 +1452,27 @@ const ConsignmentDetails = () => {
                   <td className="p-3 text-text-secondary capitalize">
                     {t.type}
                   </td>
+                  <td className="p-3">
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-semibold capitalize ${getTransactionBadgeClass(
+                        t.direction,
+                        t.party
+                      )}`}
+                    >
+                      {t.direction}
+                    </span>
+                  </td>
+                  <td className="p-3 text-text-secondary capitalize">
+                    {t.party}
+                  </td>
                   <td className="p-3 text-text-secondary capitalize">
                     {t.method}
                   </td>
-                  <td className="p-3 font-semibold text-text-primary">
+                  <td
+                    className={`p-3 font-semibold ${
+                      t.direction === "in" ? "text-action" : "text-danger"
+                    }`}
+                  >
                     ${t.amount.toFixed(2)}
                   </td>
                   <td className="p-3 text-text-muted">{t.note || "—"}</td>
@@ -1097,26 +1483,89 @@ const ConsignmentDetails = () => {
         </div>
       </div>
 
-      {/* Totals */}
-      <div className="card grid sm:grid-cols-3 gap-4 text-sm">
-        <p className="text-text-secondary">
-          <strong className="text-text-primary">Shipping Cost:</strong> $
-          {consignment.shippingCost.toFixed(2)}
-        </p>
-        <p className="text-text-secondary">
-          <strong className="text-text-primary">Total Amount:</strong> $
-          {consignment.totalAmount.toFixed(2)}
-        </p>
-        <p className="text-text-secondary">
-          <strong className="text-text-primary">Total Advance:</strong> $
-          {consignment.totalAdvance.toFixed(2)}
-        </p>
-        <p className="text-text-secondary">
-          <strong className="text-text-primary">Total Due:</strong>{" "}
-          <span className="text-danger font-semibold">
-            ${consignment.totalDue.toFixed(2)}
-          </span>
-        </p>
+      {/* Financial Summary */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Cost Breakdown */}
+        <div className="card">
+          <h2 className="text-lg font-semibold text-text-primary mb-4 border-b border-border pb-2">
+            Cost Breakdown
+          </h2>
+          <div className="space-y-3">
+            <div className="flex justify-between">
+              <span className="text-text-secondary">Total Product Cost:</span>
+              <span className="font-semibold text-text-primary">
+                ${consignment.totalProductCost.toFixed(2)}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-text-secondary">Total Selling Price:</span>
+              <span className="font-semibold text-text-primary">
+                ${consignment.totalSellingPrice.toFixed(2)}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-text-secondary">Shipping Cost:</span>
+              <span className="font-semibold text-text-primary">
+                ${consignment.shippingCost.toFixed(2)}
+              </span>
+            </div>
+            <div className="flex justify-between border-t border-border pt-2">
+              <span className="text-text-secondary font-semibold">
+                Total Amount:
+              </span>
+              <span className="font-bold text-primary">
+                ${consignment.totalAmount.toFixed(2)}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Profit Summary */}
+        <div className="card">
+          <h2 className="text-lg font-semibold text-text-primary mb-4 border-b border-border pb-2">
+            Profit Summary
+          </h2>
+          <div className="space-y-3">
+            <div className="flex justify-between">
+              <span className="text-text-secondary">Gross Profit:</span>
+              <span
+                className={`font-semibold ${
+                  consignment.grossProfit >= 0 ? "text-action" : "text-danger"
+                }`}
+              >
+                ${consignment.grossProfit.toFixed(2)}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-text-secondary">Shipping Cost:</span>
+              <span className="font-semibold text-text-primary">
+                -${consignment.shippingCost.toFixed(2)}
+              </span>
+            </div>
+            <div className="flex justify-between border-t border-border pt-2">
+              <span className="text-text-secondary font-semibold">
+                Net Profit:
+              </span>
+              <span
+                className={`font-bold ${
+                  consignment.netProfit >= 0 ? "text-action" : "text-danger"
+                }`}
+              >
+                ${consignment.netProfit.toFixed(2)}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-text-secondary">Profit Margin:</span>
+              <span
+                className={`font-semibold ${
+                  consignment.profitMargin >= 0 ? "text-action" : "text-danger"
+                }`}
+              >
+                {consignment.profitMargin.toFixed(1)}%
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Modals */}
@@ -1147,9 +1596,9 @@ const ConsignmentDetails = () => {
         />
       )}
 
-      {showAddPaymentModal && (
-        <AddPaymentModal
-          onClose={() => setShowAddPaymentModal(false)}
+      {showAddTransactionModal && (
+        <AddTransactionModal
+          onClose={() => setShowAddTransactionModal(false)}
           onAdd={fetchConsignment}
         />
       )}

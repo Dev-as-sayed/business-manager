@@ -11,7 +11,11 @@ export async function POST(
   try {
     const product = await req.json();
 
+    console.log("hit on add product ");
+
     const consignment = await ConsignmentModel.findById(params.id);
+    console.log(consignment);
+
     if (!consignment)
       return NextResponse.json(
         { message: "Consignment not found" },
