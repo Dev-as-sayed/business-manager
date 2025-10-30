@@ -481,7 +481,7 @@ const EditProductModal = ({
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch(`/api/consignments/${id}/products`, {
+      const res = await fetch(`/api/consignments/${id}/product`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ index, product: formData }),
@@ -538,7 +538,7 @@ const EditProductModal = ({
             >
               <option value="pending">Pending</option>
               <option value="delivered">Delivered</option>
-              <option value="refund">Refund</option>
+              <option value="refunded">Refund</option>
             </select>
           </div>
 
@@ -771,7 +771,7 @@ const AddTransactionModal = ({
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch(`/api/consignments/${id}/transactions`, {
+      const res = await fetch(`/api/consignments/${id}/payment`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),

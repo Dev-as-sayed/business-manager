@@ -8,7 +8,10 @@ export async function POST(
 ) {
   await dbConnect();
   try {
-    const payment = await req.json(); // { transactionId, date, amount, method, type, note, receivedBy }
+    const transaction = await req.json();
+    // Expected: { transactionId, date, amount, method, type, direction, party, note, addBy, status }
+
+    console.log("✅ New transaction received:", transaction);
 
     const consignment = await ConsignmentModel.findById(params.id);
     if (!consignment)
@@ -17,10 +20,20 @@ export async function POST(
         { status: 404 }
       );
 
-    consignment.transactions.push(payment);
-    await consignment.save(); // triggers pre-save hook to recalc totals
+    // Add transaction
+    consignment.transactions.push(transaction);
 
-    return NextResponse.json({ message: "✅ Payment recorded", consignment });
+    // Save & trigger recalculation
+    await consignment.save();
+
+    // Optionally, return profit summary & totals
+    const summary = consignment.getProfitSummary();
+
+    return NextResponse.json({
+      message: "✅ Transaction added and totals recalculated",
+      consignment,
+      summary,
+    });
   } catch (error: any) {
     return NextResponse.json({ message: error.message }, { status: 500 });
   }
