@@ -58,6 +58,7 @@ const AddUser = () => {
         address: "",
         avatar: "",
       });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       setMessage({ type: "error", text: error.message });
     } finally {
@@ -242,7 +243,7 @@ const AddUser = () => {
                   className="w-full px-4 py-3 bg-background rounded-xl text-text-primary placeholder-text-muted focus:ring-2 focus:ring-primary/20 focus:bg-accent transition-all duration-200 outline-none"
                 />
                 <p className="text-xs text-text-muted mt-1">
-                  Provide a URL to the user's profile picture
+                  Provide a URL to the user&apos;s profile picture
                 </p>
               </div>
             </div>

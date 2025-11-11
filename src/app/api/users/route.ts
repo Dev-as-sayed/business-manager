@@ -33,6 +33,7 @@ export async function POST(req: Request) {
       { message: "User registered successfully", user },
       { status: 201 }
     );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     return NextResponse.json({ message: error.message }, { status: 500 });
   }
@@ -59,6 +60,7 @@ export async function GET(req: Request) {
     }
 
     return NextResponse.json({ users });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     return NextResponse.json(
       { message: error.message || "Something went wrong" },

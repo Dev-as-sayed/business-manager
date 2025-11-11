@@ -26,6 +26,7 @@ export async function POST(
       message: "✅ Product added and totals recalculated",
       consignment,
     });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error("Error adding product:", error);
     return NextResponse.json({ message: error.message }, { status: 500 });
@@ -66,6 +67,7 @@ export async function PUT(
       message: "✅ Product updated and totals recalculated",
       consignment,
     });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error("Error updating product:", error);
     return NextResponse.json({ message: error.message }, { status: 500 });

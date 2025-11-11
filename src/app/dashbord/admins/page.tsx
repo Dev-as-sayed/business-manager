@@ -15,6 +15,7 @@ import {
 } from "react-icons/ri";
 
 const AdminTable = () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [admins, setAdmins] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 

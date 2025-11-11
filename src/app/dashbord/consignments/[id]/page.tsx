@@ -7,7 +7,6 @@ import { TbLoader2 } from "react-icons/tb";
 import { BiEdit } from "react-icons/bi";
 import { BsTrash2 } from "react-icons/bs";
 import { RiRefundFill } from "react-icons/ri";
-import { HiReceiptRefund } from "react-icons/hi";
 import { FaMoneyBillWave, FaShippingFast } from "react-icons/fa";
 
 type User = { _id: string; name: string; email: string };
@@ -310,6 +309,7 @@ const AddProductModal = ({
             <select
               value={formData.status}
               onChange={(e) =>
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 setFormData({ ...formData, status: e.target.value as any })
               }
               className="w-full p-2 border border-border rounded focus:outline-none focus:ring-2 focus:ring-primary"

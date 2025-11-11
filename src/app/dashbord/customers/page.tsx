@@ -527,10 +527,7 @@ const CustomersTable = () => {
                         </div>
                         <div className="bg-accent rounded-lg p-3 text-center">
                           <div className="text-lg font-bold text-text-primary">
-                            $
-                            {getConsignmentStats(
-                              consignments
-                            ).totalValue.toFixed(2)}
+                            ${getConsignmentStats(consignments).totalValue}
                           </div>
                           <div className="text-xs text-text-secondary">
                             Total Value
@@ -597,7 +594,7 @@ const CustomersTable = () => {
                           <div className="flex items-center justify-between text-xs text-text-secondary">
                             <span>{formatDate(consignment.startDate)}</span>
                             <span className="font-medium text-text-primary">
-                              ${consignment.totalAmount?.toFixed(2) || "0.00"}
+                              ${consignment.totalAmount}
                             </span>
                           </div>
                         </motion.div>

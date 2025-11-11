@@ -21,6 +21,7 @@ export async function GET(
       );
 
     return NextResponse.json({ consignment }, { status: 200 });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     return NextResponse.json({ message: error.message }, { status: 500 });
   }
@@ -50,6 +51,7 @@ export async function PUT(
       message: "✅ Updated successfully",
       consignment: updated,
     });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     return NextResponse.json({ message: error.message }, { status: 500 });
   }
@@ -69,8 +71,8 @@ export async function DELETE(
         { message: "Consignment not found" },
         { status: 404 }
       );
-
     return NextResponse.json({ message: "🗑️ Consignment deleted" });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     return NextResponse.json({ message: error.message }, { status: 500 });
   }

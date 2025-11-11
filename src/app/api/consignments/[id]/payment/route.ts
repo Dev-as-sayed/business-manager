@@ -34,6 +34,7 @@ export async function POST(
       consignment,
       summary,
     });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     return NextResponse.json({ message: error.message }, { status: 500 });
   }

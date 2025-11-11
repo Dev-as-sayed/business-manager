@@ -235,10 +235,10 @@ consignmentSchema.methods.getProfitSummary = function () {
 // Method to update overall consignment status
 consignmentSchema.methods.updateConsignmentStatus = function () {
   const deliveredCount = this.products.filter(
-    (p) => p.status === "delivered"
+    (p: any) => p.status === "delivered"
   ).length;
   const refundedCount = this.products.filter(
-    (p) => p.status === "refunded"
+    (p: any) => p.status === "refunded"
   ).length;
   const totalCount = this.products.length;
 

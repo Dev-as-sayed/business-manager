@@ -37,6 +37,7 @@ export async function GET(req: Request) {
     console.log("✅ Found consignments:", consignments.length);
 
     return NextResponse.json({ success: true, consignments }, { status: 200 });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error("❌ Error fetching consignments:", error);
     return NextResponse.json(

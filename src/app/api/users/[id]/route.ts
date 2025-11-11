@@ -10,6 +10,7 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
     if (!user)
       return NextResponse.json({ message: "User not found" }, { status: 404 });
     return NextResponse.json({ user });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     return NextResponse.json({ message: error.message }, { status: 500 });
   }
@@ -29,6 +30,7 @@ export async function PUT(
     if (!updatedUser)
       return NextResponse.json({ message: "User not found" }, { status: 404 });
     return NextResponse.json({ message: "User updated", user: updatedUser });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     return NextResponse.json({ message: error.message }, { status: 500 });
   }
@@ -45,6 +47,7 @@ export async function DELETE(
     if (!deletedUser)
       return NextResponse.json({ message: "User not found" }, { status: 404 });
     return NextResponse.json({ message: "User deleted" });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     return NextResponse.json({ message: error.message }, { status: 500 });
   }

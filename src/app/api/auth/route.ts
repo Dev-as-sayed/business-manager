@@ -38,6 +38,7 @@ export async function POST(req: Request) {
         role: user.role,
       },
     });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     return NextResponse.json({ message: error.message }, { status: 500 });
   }

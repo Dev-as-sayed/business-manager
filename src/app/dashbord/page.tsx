@@ -8,26 +8,85 @@ import {
   BiPackage,
   BiTrendingUp,
   BiRefresh,
+  BiUser,
 } from "react-icons/bi";
-import { BsTruck, BsGraphUp, BsThreeDots } from "react-icons/bs";
-import { FaDollarSign } from "react-icons/fa";
+import { BsTruck, BsGraphUp, BsThreeDots, BsBoxSeam } from "react-icons/bs";
+import { FaDollarSign, FaUsers, FaShippingFast } from "react-icons/fa";
 import { FiArrowUpRight, FiArrowDownRight, FiEye } from "react-icons/fi";
+import { TbPackageExport, TbPackageImport } from "react-icons/tb";
 
 interface ReportData {
-  totalConsignments: number;
-  totalSales: number;
-  totalShippingCost: number;
-  totalAdvance: number;
-  totalDue: number;
+  summary: {
+    totalConsignments: number;
+    period: string;
+    dateRange: any;
+    filters: any;
+  };
+  analytics: {
+    totalRevenue: number;
+    totalCost: number;
+    totalProfit: number;
+    averageOrderValue: number;
+    profitMargin: number;
+    completionRate: number;
+  };
   statusSummary: Record<string, number>;
-  recentConsignments: {
+  financialSummary: {
+    totalSales: number;
+    totalCost: number;
+    grossProfit: number;
+    netProfit: number;
+    totalShipping: number;
+    totalReceived: number;
+    totalDue: number;
+    totalPaid: number;
+  };
+  productAnalytics: {
+    totalProducts: number;
+    totalDelivered: number;
+    totalPending: number;
+    totalRefunded: number;
+    topCategories: Array<{ name: string; count: number }>;
+    topBrands: Array<{ name: string; count: number }>;
+  };
+  paymentAnalytics: {
+    totalTransactions: number;
+    totalReceived: number;
+    totalPaid: number;
+    paymentMethods: Record<string, number>;
+    transactionTypes: Record<string, number>;
+  };
+  customerSupplierAnalytics: {
+    topCustomers: Array<{
+      id: string;
+      name: string;
+      count: number;
+      totalSpent: number;
+    }>;
+    topSuppliers: Array<{
+      id: string;
+      name: string;
+      count: number;
+      totalEarned: number;
+    }>;
+    customerCount: number;
+    supplierCount: number;
+  };
+  recentActivity: Array<{
     id: string;
     consignmentId: string;
-    totalAmount: number;
-    totalDue: number;
+    customer: string;
     status: string;
+    amount: number;
+    profit: number;
     createdAt: string;
-  }[];
+  }>;
+  performanceMetrics: {
+    deliveryTime: number;
+    paymentCollectionRate: number;
+    refundRate: number;
+    customerSatisfaction: number;
+  };
 }
 
 const DashboardLanding = () => {
@@ -35,16 +94,20 @@ const DashboardLanding = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [timeFilter, setTimeFilter] = useState<
-    "today" | "week" | "month" | "all"
+    "today" | "week" | "month" | "year" | "all"
   >("month");
 
   const fetchData = async () => {
     try {
-      const res = await fetch(`/api/reports?filter=${timeFilter}`);
+      const res = await fetch(`/api/reports?period=${timeFilter}`);
       const json = await res.json();
-      setData(json.data);
+      if (json.success) {
+        setData(json.data);
+      } else {
+        console.error("Failed to fetch data:", json.message);
+      }
     } catch (err) {
-      console.error(err);
+      console.error("Error fetching data:", err);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -138,7 +201,7 @@ const DashboardLanding = () => {
             Dashboard Overview
           </h1>
           <p className="text-text-secondary mt-1">
-            Welcome back! Here's your business summary
+            Welcome back! Here's your business summary for {timeFilter}
           </p>
         </div>
 
@@ -149,6 +212,7 @@ const DashboardLanding = () => {
               { key: "today", label: "Today" },
               { key: "week", label: "Week" },
               { key: "month", label: "Month" },
+              { key: "year", label: "Year" },
               { key: "all", label: "All" },
             ].map((filter) => (
               <button
@@ -181,22 +245,10 @@ const DashboardLanding = () => {
               <BiRefresh className="w-5 h-5" />
             </motion.div>
           </motion.button>
-
-          <div className="flex items-center space-x-2 text-sm">
-            <span className="text-text-muted">Last updated:</span>
-            <span className="text-text-primary font-medium">
-              {new Date().toLocaleDateString("en-US", {
-                month: "short",
-                day: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
-            </span>
-          </div>
         </div>
       </motion.div>
 
-      {/* 📊 Summary Cards Grid */}
+      {/* 📊 Main Summary Cards Grid */}
       <motion.div
         variants={itemVariants}
         className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6"
@@ -204,8 +256,7 @@ const DashboardLanding = () => {
         <SummaryCard
           icon={<BiPackage className="w-6 h-6 text-blue-600" />}
           title="Total Consignments"
-          value={data.totalConsignments}
-          trend={{ value: 12, isPositive: true }}
+          value={data.summary.totalConsignments.toString()}
           description="Active shipments"
           accent="blue"
           delay={0.1}
@@ -213,29 +264,63 @@ const DashboardLanding = () => {
         <SummaryCard
           icon={<FaDollarSign className="w-5 h-5 text-green-600" />}
           title="Total Revenue"
-          value={`$${data.totalSales}`}
-          trend={{ value: 8, isPositive: true }}
+          value={`$${data.analytics.totalRevenue.toLocaleString()}`}
           description="From all consignments"
           accent="green"
           delay={0.2}
         />
         <SummaryCard
-          icon={<BiCreditCard className="w-6 h-6 text-amber-600" />}
-          title="Total Advance"
-          value={`$${data.totalAdvance}`}
-          trend={{ value: 5, isPositive: true }}
-          description="Received payments"
+          icon={<BiTrendingUp className="w-6 h-6 text-amber-600" />}
+          title="Net Profit"
+          value={`$${data.analytics.totalProfit.toLocaleString()}`}
+          description={`${data.analytics.profitMargin.toFixed(1)}% margin`}
           accent="amber"
           delay={0.3}
         />
         <SummaryCard
-          icon={<BiTrendingUp className="w-6 h-6 text-red-600" />}
-          title="Pending Due"
-          value={`$${data.totalDue}`}
-          trend={{ value: 3, isPositive: false }}
-          description="Awaiting collection"
-          accent="red"
+          icon={<BiCreditCard className="w-6 h-6 text-purple-600" />}
+          title="Total Received"
+          value={`$${data.financialSummary.totalReceived.toLocaleString()}`}
+          description={`${data.performanceMetrics.paymentCollectionRate.toFixed(
+            1
+          )}% collection rate`}
+          accent="purple"
           delay={0.4}
+        />
+      </motion.div>
+
+      {/* Secondary Metrics Grid */}
+      <motion.div
+        variants={itemVariants}
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+      >
+        <MetricCard
+          icon={<TbPackageExport className="w-5 h-5 text-cyan-600" />}
+          title="Products Delivered"
+          value={data.productAnalytics.totalDelivered.toString()}
+          subtitle={`of ${data.productAnalytics.totalProducts}`}
+          accent="cyan"
+        />
+        <MetricCard
+          icon={<FaUsers className="w-5 h-5 text-indigo-600" />}
+          title="Active Customers"
+          value={data.customerSupplierAnalytics.customerCount.toString()}
+          subtitle="Registered users"
+          accent="indigo"
+        />
+        <MetricCard
+          icon={<TbPackageImport className="w-5 h-5 text-orange-600" />}
+          title="Supplier Partners"
+          value={data.customerSupplierAnalytics.supplierCount.toString()}
+          subtitle="Active suppliers"
+          accent="orange"
+        />
+        <MetricCard
+          icon={<BsBoxSeam className="w-5 h-5 text-red-600" />}
+          title="Refund Rate"
+          value={`${data.performanceMetrics.refundRate.toFixed(1)}%`}
+          subtitle="Product returns"
+          accent="red"
         />
       </motion.div>
 
@@ -258,7 +343,7 @@ const DashboardLanding = () => {
                   key={status}
                   status={status}
                   count={count}
-                  total={data.totalConsignments}
+                  total={data.summary.totalConsignments}
                   delay={0.5 + index * 0.1}
                 />
               )
@@ -266,62 +351,103 @@ const DashboardLanding = () => {
           </div>
         </motion.div>
 
-        {/* 📦 Shipping Cost Card */}
+        {/* 📦 Performance Metrics */}
         <motion.div
           variants={itemVariants}
           className="bg-card rounded-xl border border-border p-6"
         >
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-text-primary">
-              Shipping Analytics
+              Performance Metrics
             </h3>
-            <BsTruck className="w-5 h-5 text-text-muted" />
+            <BsGraphUp className="w-5 h-5 text-text-muted" />
           </div>
           <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <span className="text-text-secondary">Total Shipping Cost</span>
-              <span className="text-2xl font-bold text-text-primary">
-                ${data.totalShippingCost}
-              </span>
-            </div>
-
-            <div className="space-y-2">
-              <div className="w-full bg-accent rounded-full h-3">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{
-                    width: `${Math.min(
-                      (data.totalShippingCost / data.totalSales) * 100,
-                      100
-                    )}%`,
-                  }}
-                  transition={{ duration: 1, delay: 0.6 }}
-                  className="bg-primary rounded-full h-3"
-                />
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-text-muted">Cost Ratio</span>
-                <span className="font-semibold text-text-primary">
-                  {((data.totalShippingCost / data.totalSales) * 100).toFixed(
-                    1
-                  )}
-                  %
-                </span>
-              </div>
-            </div>
-
-            <div className="pt-2 border-t border-border">
-              <p className="text-sm text-text-muted">
-                Shipping costs represent{" "}
-                {((data.totalShippingCost / data.totalSales) * 100).toFixed(1)}%
-                of total revenue
-              </p>
-            </div>
+            <PerformanceMetric
+              label="Avg Delivery Time"
+              value={`${data.performanceMetrics.deliveryTime} days`}
+              icon={<BsTruck className="w-4 h-4" />}
+            />
+            <PerformanceMetric
+              label="Payment Collection"
+              value={`${data.performanceMetrics.paymentCollectionRate.toFixed(
+                1
+              )}%`}
+              icon={<BiCreditCard className="w-4 h-4" />}
+            />
+            <PerformanceMetric
+              label="Customer Satisfaction"
+              value={`${data.performanceMetrics.customerSatisfaction}%`}
+              icon={<BiUser className="w-4 h-4" />}
+            />
+            <PerformanceMetric
+              label="Completion Rate"
+              value={`${data.analytics.completionRate.toFixed(1)}%`}
+              icon={<BsBoxSeam className="w-4 h-4" />}
+            />
           </div>
         </motion.div>
       </div>
 
-      {/* 🕓 Recent Consignments Table */}
+      {/* Financial Breakdown */}
+      <motion.div
+        variants={itemVariants}
+        className="grid grid-cols-1 lg:grid-cols-2 gap-6"
+      >
+        {/* Financial Summary */}
+        <div className="bg-card rounded-xl border border-border p-6">
+          <h3 className="text-lg font-semibold text-text-primary mb-4">
+            Financial Summary
+          </h3>
+          <div className="space-y-3">
+            <FinancialItem
+              label="Total Sales"
+              value={`$${data.financialSummary.totalSales.toLocaleString()}`}
+            />
+            <FinancialItem
+              label="Product Cost"
+              value={`$${data.financialSummary.totalCost.toLocaleString()}`}
+            />
+            <FinancialItem
+              label="Gross Profit"
+              value={`$${data.financialSummary.grossProfit.toLocaleString()}`}
+              isProfit={true}
+            />
+            <FinancialItem
+              label="Shipping Cost"
+              value={`$${data.financialSummary.totalShipping.toLocaleString()}`}
+            />
+            <div className="border-t border-border pt-2">
+              <FinancialItem
+                label="Net Profit"
+                value={`$${data.financialSummary.netProfit.toLocaleString()}`}
+                isProfit={true}
+                isBold={true}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Top Categories */}
+        <div className="bg-card rounded-xl border border-border p-6">
+          <h3 className="text-lg font-semibold text-text-primary mb-4">
+            Top Product Categories
+          </h3>
+          <div className="space-y-3">
+            {data.productAnalytics.topCategories.map((category, index) => (
+              <CategoryItem
+                key={category.name}
+                name={category.name}
+                count={category.count}
+                total={data.productAnalytics.totalProducts}
+                rank={index + 1}
+              />
+            ))}
+          </div>
+        </div>
+      </motion.div>
+
+      {/* 🕓 Recent Activity Table */}
       <motion.div
         variants={itemVariants}
         className="bg-card rounded-xl border border-border overflow-hidden"
@@ -330,14 +456,14 @@ const DashboardLanding = () => {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-xl font-semibold text-text-primary">
-                Recent Consignments
+                Recent Activity
               </h2>
               <p className="text-text-secondary text-sm mt-1">
-                Latest {data.recentConsignments.length} shipments
+                Latest {data.recentActivity.length} consignments
               </p>
             </div>
             <Link
-              href="/dashbord/consignments"
+              href="/dashboard/consignments"
               className="text-primary hover:text-primary-hover font-medium text-sm flex items-center gap-1 transition-colors group"
             >
               View all
@@ -354,10 +480,13 @@ const DashboardLanding = () => {
                   Consignment ID
                 </th>
                 <th className="text-left p-4 text-sm font-semibold text-text-primary uppercase tracking-wider">
-                  Total Amount
+                  Customer
                 </th>
                 <th className="text-left p-4 text-sm font-semibold text-text-primary uppercase tracking-wider">
-                  Due Amount
+                  Amount
+                </th>
+                <th className="text-left p-4 text-sm font-semibold text-text-primary uppercase tracking-wider">
+                  Profit
                 </th>
                 <th className="text-left p-4 text-sm font-semibold text-text-primary uppercase tracking-wider">
                   Status
@@ -372,10 +501,10 @@ const DashboardLanding = () => {
             </thead>
             <tbody className="divide-y divide-border">
               <AnimatePresence>
-                {data.recentConsignments.map((consignment, index) => (
-                  <ConsignmentRow
-                    key={consignment.id}
-                    consignment={consignment}
+                {data.recentActivity.map((activity, index) => (
+                  <ActivityRow
+                    key={activity.id}
+                    activity={activity}
                     index={index}
                   />
                 ))}
@@ -388,12 +517,11 @@ const DashboardLanding = () => {
   );
 };
 
-// ✅ Enhanced Summary Card Component with Animation
+// ✅ Enhanced Summary Card Component
 const SummaryCard = ({
   icon,
   title,
   value,
-  trend,
   description,
   accent = "blue",
   delay = 0,
@@ -401,9 +529,8 @@ const SummaryCard = ({
   icon: React.ReactNode;
   title: string;
   value: string;
-  trend?: { value: number; isPositive: boolean };
   description?: string;
-  accent?: "blue" | "green" | "amber" | "red";
+  accent?: "blue" | "green" | "amber" | "purple";
   delay?: number;
 }) => {
   const accentColors = {
@@ -425,11 +552,11 @@ const SummaryCard = ({
       text: "text-amber-700",
       gradient: "from-amber-500 to-amber-600",
     },
-    red: {
-      bg: "bg-red-50",
-      border: "border-red-200",
-      text: "text-red-700",
-      gradient: "from-red-500 to-red-600",
+    purple: {
+      bg: "bg-purple-50",
+      border: "border-purple-200",
+      text: "text-purple-700",
+      gradient: "from-purple-500 to-purple-600",
     },
   };
 
@@ -446,7 +573,6 @@ const SummaryCard = ({
       }}
       className={`bg-card rounded-xl border border-border p-6 transition-all duration-300 group cursor-pointer relative overflow-hidden`}
     >
-      {/* Background Gradient on Hover */}
       <div
         className={`absolute inset-0 bg-gradient-to-br ${colors.gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-300`}
       />
@@ -459,23 +585,6 @@ const SummaryCard = ({
           >
             {icon}
           </motion.div>
-          {trend && (
-            <motion.div
-              initial={{ opacity: 0, x: 10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: delay + 0.2 }}
-              className={`flex items-center space-x-1 text-sm font-medium ${
-                trend.isPositive ? "text-green-600" : "text-red-600"
-              }`}
-            >
-              {trend.isPositive ? (
-                <FiArrowUpRight className="w-4 h-4" />
-              ) : (
-                <FiArrowDownRight className="w-4 h-4" />
-              )}
-              <span>{trend.value}%</span>
-            </motion.div>
-          )}
         </div>
 
         <div className="space-y-2">
@@ -494,6 +603,32 @@ const SummaryCard = ({
         </div>
       </div>
     </motion.div>
+  );
+};
+
+// ✅ Metric Card Component
+const MetricCard = ({
+  icon,
+  title,
+  value,
+  subtitle,
+  accent = "blue",
+}: {
+  icon: React.ReactNode;
+  title: string;
+  value: string;
+  subtitle: string;
+  accent?: string;
+}) => {
+  return (
+    <div className="bg-card rounded-xl border border-border p-4 flex items-center gap-4">
+      <div className="p-3 rounded-lg bg-accent">{icon}</div>
+      <div>
+        <p className="text-2xl font-bold text-text-primary">{value}</p>
+        <p className="text-sm text-text-secondary">{title}</p>
+        <p className="text-xs text-text-muted">{subtitle}</p>
+      </div>
+    </div>
   );
 };
 
@@ -526,10 +661,20 @@ const StatusPill = ({
         label: "Delivered",
         gradient: "from-green-400 to-green-500",
       },
+      "partially-delivered": {
+        color: "bg-cyan-100 text-cyan-800 border-cyan-200",
+        label: "Partial",
+        gradient: "from-cyan-400 to-cyan-500",
+      },
       cancelled: {
         color: "bg-red-100 text-red-800 border-red-200",
         label: "Cancelled",
         gradient: "from-red-400 to-red-500",
+      },
+      refunded: {
+        color: "bg-purple-100 text-purple-800 border-purple-200",
+        label: "Refunded",
+        gradient: "from-purple-400 to-purple-500",
       },
     };
 
@@ -553,7 +698,6 @@ const StatusPill = ({
       whileHover={{ scale: 1.05 }}
       className="text-center p-4 rounded-lg border-2 border-transparent hover:border-current transition-all cursor-pointer group relative overflow-hidden"
     >
-      {/* Animated background */}
       <div
         className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-300`}
       />
@@ -573,14 +717,89 @@ const StatusPill = ({
   );
 };
 
-// ✅ Animated Consignment Row Component
-const ConsignmentRow = ({
-  consignment,
-  index,
+// ✅ Performance Metric Component
+const PerformanceMetric = ({
+  label,
+  value,
+  icon,
 }: {
-  consignment: any;
-  index: number;
+  label: string;
+  value: string;
+  icon: React.ReactNode;
 }) => {
+  return (
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-3">
+        <div className="p-2 rounded-lg bg-accent">{icon}</div>
+        <span className="text-text-secondary">{label}</span>
+      </div>
+      <span className="font-semibold text-text-primary">{value}</span>
+    </div>
+  );
+};
+
+// ✅ Financial Item Component
+const FinancialItem = ({
+  label,
+  value,
+  isProfit = false,
+  isBold = false,
+}: {
+  label: string;
+  value: string;
+  isProfit?: boolean;
+  isBold?: boolean;
+}) => {
+  return (
+    <div className="flex justify-between items-center">
+      <span className={`text-text-secondary ${isBold ? "font-semibold" : ""}`}>
+        {label}
+      </span>
+      <span
+        className={`${isProfit ? "text-green-600" : "text-text-primary"} ${
+          isBold ? "font-bold text-lg" : "font-semibold"
+        }`}
+      >
+        {value}
+      </span>
+    </div>
+  );
+};
+
+// ✅ Category Item Component
+const CategoryItem = ({
+  name,
+  count,
+  total,
+  rank,
+}: {
+  name: string;
+  count: number;
+  total: number;
+  rank: number;
+}) => {
+  const percentage = total > 0 ? (count / total) * 100 : 0;
+
+  return (
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-3">
+        <div className="w-6 h-6 rounded-full bg-accent flex items-center justify-center text-xs font-bold">
+          {rank}
+        </div>
+        <span className="text-text-secondary capitalize">{name}</span>
+      </div>
+      <div className="text-right">
+        <span className="font-semibold text-text-primary">{count}</span>
+        <span className="text-xs text-text-muted ml-2">
+          ({percentage.toFixed(1)}%)
+        </span>
+      </div>
+    </div>
+  );
+};
+
+// ✅ Animated Activity Row Component
+const ActivityRow = ({ activity, index }: { activity: any; index: number }) => {
   return (
     <motion.tr
       initial={{ opacity: 0, y: 10 }}
@@ -593,29 +812,32 @@ const ConsignmentRow = ({
         <div className="flex items-center space-x-3">
           <div className="w-2 h-2 bg-primary rounded-full group-hover:scale-150 transition-transform" />
           <span className="font-medium text-text-primary group-hover:text-primary transition-colors">
-            {consignment.consignmentId}
+            {activity.consignmentId}
           </span>
         </div>
       </td>
       <td className="p-4">
+        <span className="text-text-primary">{activity.customer}</span>
+      </td>
+      <td className="p-4">
         <span className="font-semibold text-text-primary">
-          ${consignment.totalAmount}
+          ${activity.amount}
         </span>
       </td>
       <td className="p-4">
         <span
           className={`font-semibold ${
-            consignment.totalDue > 0 ? "text-red-600" : "text-green-600"
+            activity.profit >= 0 ? "text-green-600" : "text-red-600"
           }`}
         >
-          ${consignment.totalDue}
+          ${activity.profit}
         </span>
       </td>
       <td className="p-4">
-        <StatusBadge status={consignment.status} />
+        <StatusBadge status={activity.status} />
       </td>
       <td className="p-4 text-text-secondary">
-        {new Date(consignment.createdAt).toLocaleDateString("en-US", {
+        {new Date(activity.createdAt).toLocaleDateString("en-US", {
           month: "short",
           day: "numeric",
           year: "numeric",
@@ -624,7 +846,7 @@ const ConsignmentRow = ({
       <td className="p-4">
         <div className="flex items-center gap-2">
           <Link
-            href={`/dashbord/consignments/${consignment.id}`}
+            href={`/dashboard/consignments/${activity.id}`}
             className="p-2 text-text-secondary hover:text-primary hover:bg-accent rounded-lg transition-all"
             title="View details"
           >
@@ -652,8 +874,12 @@ const StatusBadge = ({ status }: { status: string }) => {
         return "bg-amber-100 text-amber-800 border-amber-200";
       case "in-transit":
         return "bg-blue-100 text-blue-800 border-blue-200";
+      case "partially-delivered":
+        return "bg-cyan-100 text-cyan-800 border-cyan-200";
       case "cancelled":
         return "bg-red-100 text-red-800 border-red-200";
+      case "refunded":
+        return "bg-purple-100 text-purple-800 border-purple-200";
       default:
         return "bg-gray-100 text-gray-800 border-gray-200";
     }
