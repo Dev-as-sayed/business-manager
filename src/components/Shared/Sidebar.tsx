@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { BiLogOut, BiChevronRight, BiMenu, BiX } from "react-icons/bi";
 import { useState, useEffect } from "react";
+import { TUser } from "@/db/interface/user";
 
 const navLinks = [
   { title: "Dashboard", path: "/dashbord", icon: "📊" },
@@ -15,7 +16,12 @@ const navLinks = [
   { title: "Consignments", path: "/dashbord/consignments", icon: "📦" },
 ];
 
-const Sidebar = ({ logout, user }) => {
+interface SidebarProps {
+  logout: () => void;
+  user?: Pick<TUser, "name" | "email" | "_id">;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ logout, user }: SidebarProps) => {
   const pathname = usePathname();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);

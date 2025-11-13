@@ -5,11 +5,11 @@ import { NextResponse } from "next/server";
 // ✅ GET single consignment by ID
 export async function GET(
   _: Request,
-  context: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> } // 👈 Must be Promise
 ) {
   await dbConnect();
-  const { id } = await context.params; // ✅ await params
   try {
+    const { id } = await params; // 👈 Await it
     const consignment = await ConsignmentModel.findById(id)
       .populate("supplier")
       .populate("customer");
@@ -21,7 +21,6 @@ export async function GET(
       );
 
     return NextResponse.json({ consignment }, { status: 200 });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     return NextResponse.json({ message: error.message }, { status: 500 });
   }
@@ -30,11 +29,14 @@ export async function GET(
 // ✅ UPDATE (PUT)
 export async function PUT(
   req: Request,
-  context: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   await dbConnect();
-  const { id } = await context.params;
   try {
+    const { id } = await params; // 👈 Await here too
+
+    console.log(id);
+
     const body = await req.json();
     const updated = await ConsignmentModel.findByIdAndUpdate(id, body, {
       new: true,
@@ -51,7 +53,6 @@ export async function PUT(
       message: "✅ Updated successfully",
       consignment: updated,
     });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     return NextResponse.json({ message: error.message }, { status: 500 });
   }
@@ -60,11 +61,11 @@ export async function PUT(
 // ✅ DELETE
 export async function DELETE(
   _: Request,
-  context: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   await dbConnect();
-  const { id } = await context.params;
   try {
+    const { id } = await params; // 👈 Await again
     const deleted = await ConsignmentModel.findByIdAndDelete(id);
     if (!deleted)
       return NextResponse.json(
@@ -72,7 +73,6 @@ export async function DELETE(
         { status: 404 }
       );
     return NextResponse.json({ message: "🗑️ Consignment deleted" });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     return NextResponse.json({ message: error.message }, { status: 500 });
   }

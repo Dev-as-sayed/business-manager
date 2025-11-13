@@ -37,7 +37,7 @@ const AddNewConsignment = () => {
       | "refunded",
     products: [
       {
-        category: "mobile" as "mobile" | "laptop" | "accessory" | "other",
+        category: "",
         brand: "",
         model: "",
         specs: "",
@@ -165,7 +165,9 @@ const AddNewConsignment = () => {
   // ✅ Handle product changes
   const handleProductChange = (
     index: number,
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
   ) => {
     const { name, value } = e.target;
     const updatedProducts = [...consignment.products];
@@ -196,7 +198,7 @@ const AddNewConsignment = () => {
     const newProducts = [
       ...consignment.products,
       {
-        category: "mobile",
+        category: "",
         brand: "",
         model: "",
         specs: "",
@@ -205,7 +207,7 @@ const AddNewConsignment = () => {
         quantity: 1,
         totalbuyingCost: 0,
         totalsellingCost: 0,
-        status: "pending",
+        status: "pending" as const,
         deliveredQuantity: 0,
         refundedQuantity: 0,
         profit: 0,

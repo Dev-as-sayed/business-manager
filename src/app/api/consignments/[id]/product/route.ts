@@ -5,13 +5,14 @@ import { NextResponse } from "next/server";
 // ✅ Add new product
 export async function POST(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params; // 👈 Await here too
   await dbConnect();
   try {
     const product = await req.json();
 
-    const consignment = await ConsignmentModel.findById(params.id);
+    const consignment = await ConsignmentModel.findById(id);
     if (!consignment)
       return NextResponse.json(
         { message: "❌ Consignment not found" },
@@ -36,13 +37,14 @@ export async function POST(
 // ✅ Update existing product
 export async function PUT(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params; // 👈 Await here too
   await dbConnect();
   try {
     const { index, product } = await req.json(); // expects {index, product}
 
-    const consignment = await ConsignmentModel.findById(params.id);
+    const consignment = await ConsignmentModel.findById(id);
     if (!consignment)
       return NextResponse.json(
         { message: "❌ Consignment not found" },

@@ -4,21 +4,20 @@ import { NextResponse } from "next/server";
 
 export async function POST(
   req: Request,
-  context: Promise<{ params: { id: string } }>
+  context: { params: Promise<{ id: string }> } // 👈 Promise fixed here
 ) {
-  const { params } = await context; // ✅ await because context may be a Promise
+  const { id } = await context.params; // ✅ await params
   await dbConnect();
 
   try {
     const product = await req.json();
-    const consignment = await ConsignmentModel.findById(params.id);
 
-    if (!consignment) {
+    const consignment = await ConsignmentModel.findById(id);
+    if (!consignment)
       return NextResponse.json(
         { message: "Consignment not found" },
         { status: 404 }
       );
-    }
 
     consignment.products.push(product);
     await consignment.save();

@@ -1,4 +1,5 @@
 import { Types } from "mongoose";
+import { TUser } from "./user";
 
 // ✅ Enhanced Transaction inside a consignment
 export interface TTransaction {
@@ -46,8 +47,8 @@ export interface TConsignment {
   _id?: string;
   consignmentId: string;
   admin: Types.ObjectId; // admin who added this consignment
-  supplier: Types.ObjectId; // user who supplied goods
-  customer: Types.ObjectId; // user receiving goods
+  supplier: Types.ObjectId | TUser; // user who supplied goods
+  customer: Types.ObjectId | TUser; // user receiving goods
   products: TConsignmentProduct[];
   transactions: TTransaction[];
   startDate: Date;

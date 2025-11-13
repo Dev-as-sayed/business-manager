@@ -3,10 +3,14 @@ import { UserModel } from "@/db/model/user";
 import { NextResponse } from "next/server";
 
 // ✅ GET /api/users/:id
-export async function GET(_: Request, { params }: { params: { id: string } }) {
+export async function GET(
+  _: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
   await dbConnect();
   try {
-    const user = await UserModel.findById(params.id).select("-password");
+    const user = await UserModel.findById(id).select("-password");
     if (!user)
       return NextResponse.json({ message: "User not found" }, { status: 404 });
     return NextResponse.json({ user });
@@ -19,12 +23,13 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
 // ✅ PUT /api/users/:id
 export async function PUT(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   await dbConnect();
   try {
     const body = await req.json();
-    const updatedUser = await UserModel.findByIdAndUpdate(params.id, body, {
+    const updatedUser = await UserModel.findByIdAndUpdate(id, body, {
       new: true,
     }).select("-password");
     if (!updatedUser)
@@ -39,11 +44,12 @@ export async function PUT(
 // ✅ DELETE /api/users/:id
 export async function DELETE(
   _: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   await dbConnect();
   try {
-    const deletedUser = await UserModel.findByIdAndDelete(params.id);
+    const { id } = await params;
+    const deletedUser = await UserModel.findByIdAndDelete(id);
     if (!deletedUser)
       return NextResponse.json({ message: "User not found" }, { status: 404 });
     return NextResponse.json({ message: "User deleted" });

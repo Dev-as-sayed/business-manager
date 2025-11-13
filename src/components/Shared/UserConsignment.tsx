@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Loader2 } from "lucide-react";
+import { BiLoader } from "react-icons/bi";
 
 interface UserConsignmentProps {
   id: string;
@@ -49,7 +49,7 @@ const UserConsignment: React.FC<UserConsignmentProps> = ({ id, role }) => {
   if (loading)
     return (
       <div className="flex justify-center items-center py-20 text-gray-500">
-        <Loader2 className="animate-spin w-6 h-6 mr-2" />
+        <BiLoader className="animate-spin w-6 h-6 mr-2" />
         Loading consignments...
       </div>
     );

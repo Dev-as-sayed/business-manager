@@ -18,6 +18,7 @@ import {
 import { format } from "date-fns";
 import { TConsignment } from "@/db/interface/Consignment";
 import Link from "next/link";
+import { TUser } from "@/db/interface/user";
 
 const ConsignmentsManagement = () => {
   const router = useRouter();
@@ -149,10 +150,10 @@ const ConsignmentsManagement = () => {
       consignment.destination
         .toLowerCase()
         .includes(searchTerm.toLowerCase()) ||
-      consignment.supplier?.name
+      (consignment.supplier as TUser)?.name
         ?.toLowerCase()
         .includes(searchTerm.toLowerCase()) ||
-      consignment.customer?.name
+      (consignment.customer as TUser)?.name
         ?.toLowerCase()
         .includes(searchTerm.toLowerCase())
   );
@@ -463,13 +464,13 @@ const ConsignmentsManagement = () => {
                           <div className="flex items-center gap-2">
                             <RiUserLine className="w-3 h-3 text-text-muted" />
                             <span className="text-sm text-text-secondary">
-                              {consignment.supplier?.name || "N/A"}
+                              {(consignment.supplier as TUser)?.name || "N/A"}
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
                             <RiUserLine className="w-3 h-3 text-text-muted" />
                             <span className="text-sm text-text-secondary">
-                              {consignment.customer?.name || "N/A"}
+                              {(consignment.customer as TUser)?.name || "N/A"}
                             </span>
                           </div>
                         </div>
