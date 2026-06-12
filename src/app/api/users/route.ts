@@ -1,70 +1,56 @@
 import dbConnect from "@/db/db";
 import { UserModel } from "@/db/model/user";
-import { NextResponse } from "next/server";
+import { successResponse, errorResponse } from "@/lib/api-response";
 
-// ✅ POST /api/users → Register User
 export async function POST(req: Request) {
   await dbConnect();
   try {
     const body = await req.json();
     const { name, email, password, role, phone, address, avatar } = body;
 
-    // Check if user exists
-    const existingUser = await UserModel.findOne({ email });
-    if (existingUser) {
-      return NextResponse.json(
-        { message: "Email already registered!" },
-        { status: 400 }
-      );
+    if (!name || !email || !password) {
+      return errorResponse("Name, email, and password are required", 400);
     }
 
-    const user = new UserModel({
-      name,
-      email,
-      password,
-      role,
-      phone,
-      address,
-      avatar,
-    });
-    await user.save();
+    if (password.length < 6) {
+      return errorResponse("Password must be at least 6 characters", 400);
+    }
 
-    return NextResponse.json(
-      { message: "User registered successfully", user },
-      { status: 201 }
-    );
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
-    return NextResponse.json({ message: error.message }, { status: 500 });
+    if (role && !["admin", "customer", "supplier"].includes(role)) {
+      return errorResponse("Invalid role", 400);
+    }
+
+    const existingUser = await UserModel.findOne({ email });
+    if (existingUser) {
+      return errorResponse("Email already registered!", 400);
+    }
+
+    const user = await UserModel.create({ name, email, password, role, phone, address, avatar });
+
+    return successResponse({ message: "User registered successfully", user }, 201);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Something went wrong";
+    return errorResponse(message);
   }
 }
-
-// ✅ GET /api/users → Get all users
 
 export async function GET(req: Request) {
   await dbConnect();
 
   try {
-    // Extract role from query params
     const { searchParams } = new URL(req.url);
     const role = searchParams.get("role");
 
-    let users;
-
-    if (role) {
-      // ✅ Filter users by role (admin, customer, supplier)
-      users = await UserModel.find({ role }).select("-password");
-    } else {
-      // ✅ Get all users if no role filter
-      users = await UserModel.find().select("-password");
+    if (role && !["admin", "customer", "supplier"].includes(role)) {
+      return errorResponse("Invalid role filter", 400);
     }
 
-    return NextResponse.json({ users });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
-    return NextResponse.json(
-      { message: error.message || "Something went wrong" },
-      { status: 500 }
-    );
+    const filter = role ? { role } : {};
+    const users = await UserModel.find(filter).select("-password");
+
+    return successResponse({ users });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Something went wrong";
+    return errorResponse(message);
   }
 }

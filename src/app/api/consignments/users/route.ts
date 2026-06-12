@@ -1,6 +1,7 @@
 import dbConnect from "@/db/db";
 import { ConsignmentModel } from "@/db/model/Consignment";
-import { NextResponse } from "next/server";
+import { successResponse, errorResponse } from "@/lib/api-response";
+import { logger } from "@/lib/logger";
 
 export async function GET(req: Request) {
   await dbConnect();
@@ -10,39 +11,27 @@ export async function GET(req: Request) {
     const id = searchParams.get("id");
     const role = searchParams.get("role");
 
-    let consignments = [];
-    const filter: Record<string, string> = {};
-
-    // ✅ Build role-based filter
-    if (id && role) {
-      if (role === "supplier") {
-        filter.supplier = id;
-      } else if (role === "customer") {
-        filter.customer = id;
-      } else if (role === "admin") {
-        filter.admin = id;
-      }
+    if (!id || !role) {
+      return errorResponse("id and role query parameters are required", 400);
     }
 
-    console.log("🔍 Query Params:", filter);
+    if (!["supplier", "customer", "admin"].includes(role)) {
+      return errorResponse("Invalid role. Must be supplier, customer, or admin", 400);
+    }
 
-    // ✅ Fetch consignments
-    consignments = await ConsignmentModel.find(filter)
-      .populate({
-        path: "admin supplier customer",
-        select: "name email role",
-      })
+    const filter: Record<string, string> = {};
+    if (role === "supplier") filter.supplier = id;
+    else if (role === "customer") filter.customer = id;
+    else if (role === "admin") filter.admin = id;
+
+    const consignments = await ConsignmentModel.find(filter)
+      .populate({ path: "admin supplier customer", select: "name email role" })
       .sort({ createdAt: -1 });
 
-    console.log("✅ Found consignments:", consignments.length);
-
-    return NextResponse.json({ success: true, consignments }, { status: 200 });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
-    console.error("❌ Error fetching consignments:", error);
-    return NextResponse.json(
-      { success: false, message: error.message },
-      { status: 500 }
-    );
+    return successResponse({ consignments });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Something went wrong";
+    logger.error("Error fetching consignments", error);
+    return errorResponse(message);
   }
 }

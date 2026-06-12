@@ -6,14 +6,12 @@ import { BsTrash2, BsArrowRight } from "react-icons/bs";
 import { TbLoader2 } from "react-icons/tb";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/AuthProvider";
+import { useToast } from "@/context/ToastProvider";
 
 const AddNewConsignment = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState<{
-    type: "success" | "error";
-    text: string;
-  } | null>(null);
+  const { toast } = useToast();
   const [activeSection, setActiveSection] = useState<
     "basic" | "products" | "transactions"
   >("basic");
@@ -325,10 +323,8 @@ const AddNewConsignment = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setMessage(null);
 
     try {
-      // Let the server handle the calculations via the pre-save hook
       const res = await fetch("/api/consignments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -337,21 +333,15 @@ const AddNewConsignment = () => {
 
       const data = await res.json();
       if (res.ok) {
-        setMessage({
-          type: "success",
-          text: "Consignment created successfully! Redirecting...",
-        });
+        toast("success", "Consignment created! Redirecting...");
         setTimeout(() => {
           window.location.href = "/dashbord/consignments";
-        }, 2000);
+        }, 1500);
       } else {
-        setMessage({
-          type: "error",
-          text: data.message || "Failed to create consignment",
-        });
+        toast("error", data.message || "Failed to create consignment");
       }
-    } catch (err) {
-      setMessage({ type: "error", text: "Network error. Please try again." });
+    } catch {
+      toast("error", "Network error. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -1137,19 +1127,6 @@ const AddNewConsignment = () => {
                 )}
               </AnimatePresence>
 
-              {message && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className={`p-4 rounded-xl border ${
-                    message.type === "success"
-                      ? "bg-action/10 text-action border-action/20"
-                      : "bg-danger/10 text-danger border-danger/20"
-                  }`}
-                >
-                  {message.text}
-                </motion.div>
-              )}
             </div>
 
             {/* Summary Panel */}

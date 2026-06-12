@@ -1,7 +1,8 @@
 import dbConnect from "@/db/db";
-import { NextResponse } from "next/server";
 import { ConsignmentModel } from "@/db/model/Consignment";
 import { UserModel } from "@/db/model/user";
+import { successResponse, errorResponse } from "@/lib/api-response";
+import { logger } from "@/lib/logger";
 
 export async function GET(request: Request) {
   await dbConnect();
@@ -72,9 +73,8 @@ export async function GET(request: Request) {
       .sort({ createdAt: -1 });
 
     if (!consignments.length) {
-      return NextResponse.json({
-        success: true,
-        data: getEmptyReportData(),
+      return successResponse({
+        ...getEmptyReportData(),
         message: "No consignments found for the selected criteria",
       });
     }
@@ -91,50 +91,40 @@ export async function GET(request: Request) {
     const recentActivity = getRecentActivity(consignments);
     const performanceMetrics = calculatePerformanceMetrics(consignments);
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        summary: {
-          totalConsignments: consignments.length,
-          period,
-          dateRange: dateFilter.createdAt || { $gte: null, $lte: null },
-          filters: { status, customerId, supplierId },
-        },
-        analytics,
-        statusSummary,
-        financialSummary,
-        productAnalytics,
-        paymentAnalytics,
-        customerSupplierAnalytics,
-        recentActivity,
-        performanceMetrics,
-        rawData: {
-          totalCount: consignments.length,
-          consignments: consignments.slice(0, 50).map((c) => ({
-            id: c._id,
-            consignmentId: c.consignmentId,
-            customer: c.customer,
-            supplier: c.supplier,
-            status: c.status,
-            totalAmount: c.totalAmount,
-            totalDue: c.totalDue,
-            netProfit: c.netProfit,
-            createdAt: c.createdAt,
-          })),
-        },
+    return successResponse({
+      summary: {
+        totalConsignments: consignments.length,
+        period,
+        dateRange: dateFilter.createdAt || { $gte: null, $lte: null },
+        filters: { status, customerId, supplierId },
+      },
+      analytics,
+      statusSummary,
+      financialSummary,
+      productAnalytics,
+      paymentAnalytics,
+      customerSupplierAnalytics,
+      recentActivity,
+      performanceMetrics,
+      rawData: {
+        totalCount: consignments.length,
+        consignments: consignments.slice(0, 50).map((c) => ({
+          id: c._id,
+          consignmentId: c.consignmentId,
+          customer: c.customer,
+          supplier: c.supplier,
+          status: c.status,
+          totalAmount: c.totalAmount,
+          totalDue: c.totalDue,
+          netProfit: c.netProfit,
+          createdAt: c.createdAt,
+        })),
       },
     });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
-    console.error("Report API Error:", error);
-    return NextResponse.json(
-      {
-        success: false,
-        message: error.message,
-        error: process.env.NODE_ENV === "development" ? error.stack : undefined,
-      },
-      { status: 500 }
-    );
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Something went wrong";
+    logger.error("Report API Error", error);
+    return errorResponse(message);
   }
 }
 

@@ -102,7 +102,8 @@ const DashboardLanding = () => {
       const res = await fetch(`/api/reports?period=${timeFilter}`);
       const json = await res.json();
       if (json.success) {
-        setData(json.data);
+        const { success: _, ...reportData } = json;
+        setData(reportData as ReportData);
       } else {
         console.error("Failed to fetch data:", json.message);
       }

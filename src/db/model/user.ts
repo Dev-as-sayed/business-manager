@@ -16,7 +16,7 @@ const userSchema = new Schema<TUser>(
       default: "customer",
     },
     isActive: { type: Boolean, default: true },
-    consinement: [{ type: Schema.Types.ObjectId, ref: "Consignment" }],
+    consignment: [{ type: Schema.Types.ObjectId, ref: "Consignment" }],
   },
   { timestamps: true }
 );

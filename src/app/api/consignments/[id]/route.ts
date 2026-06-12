@@ -1,79 +1,69 @@
 import dbConnect from "@/db/db";
 import { ConsignmentModel } from "@/db/model/Consignment";
-import { NextResponse } from "next/server";
+import { successResponse, errorResponse } from "@/lib/api-response";
 
-// ✅ GET single consignment by ID
 export async function GET(
   _: Request,
-  { params }: { params: Promise<{ id: string }> } // 👈 Must be Promise
+  { params }: { params: Promise<{ id: string }> }
 ) {
   await dbConnect();
   try {
-    const { id } = await params; // 👈 Await it
+    const { id } = await params;
     const consignment = await ConsignmentModel.findById(id)
       .populate("supplier")
       .populate("customer");
 
-    if (!consignment)
-      return NextResponse.json(
-        { message: "Consignment not found" },
-        { status: 404 }
-      );
+    if (!consignment) return errorResponse("Consignment not found", 404);
 
-    return NextResponse.json({ consignment }, { status: 200 });
-  } catch (error: any) {
-    return NextResponse.json({ message: error.message }, { status: 500 });
+    return successResponse({ consignment });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Something went wrong";
+    return errorResponse(message);
   }
 }
 
-// ✅ UPDATE (PUT)
 export async function PUT(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   await dbConnect();
   try {
-    const { id } = await params; // 👈 Await here too
-
-    console.log(id);
-
+    const { id } = await params;
     const body = await req.json();
+
+    if (body.status && !["pending", "in-transit", "delivered", "cancelled", "partially-delivered", "refunded"].includes(body.status)) {
+      return errorResponse("Invalid status", 400);
+    }
+
     const updated = await ConsignmentModel.findByIdAndUpdate(id, body, {
       new: true,
       runValidators: true,
     });
 
-    if (!updated)
-      return NextResponse.json(
-        { message: "Consignment not found" },
-        { status: 404 }
-      );
+    if (!updated) return errorResponse("Consignment not found", 404);
 
-    return NextResponse.json({
-      message: "✅ Updated successfully",
-      consignment: updated,
-    });
-  } catch (error: any) {
-    return NextResponse.json({ message: error.message }, { status: 500 });
+    return successResponse({ message: "Consignment updated", consignment: updated });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Something went wrong";
+    return errorResponse(message);
   }
 }
 
-// ✅ DELETE
 export async function DELETE(
   _: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   await dbConnect();
   try {
-    const { id } = await params; // 👈 Await again
-    const deleted = await ConsignmentModel.findByIdAndDelete(id);
-    if (!deleted)
-      return NextResponse.json(
-        { message: "Consignment not found" },
-        { status: 404 }
-      );
-    return NextResponse.json({ message: "🗑️ Consignment deleted" });
-  } catch (error: any) {
-    return NextResponse.json({ message: error.message }, { status: 500 });
+    const { id } = await params;
+
+    const consignment = await ConsignmentModel.findById(id);
+    if (!consignment) return errorResponse("Consignment not found", 404);
+
+    await ConsignmentModel.findByIdAndDelete(id);
+    return successResponse({ message: "Consignment deleted" });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Something went wrong";
+    return errorResponse(message);
   }
 }

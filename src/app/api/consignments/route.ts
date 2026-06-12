@@ -1,24 +1,32 @@
 import dbConnect from "@/db/db";
 import { ConsignmentModel } from "@/db/model/Consignment";
-import { NextResponse } from "next/server";
+import { successResponse, errorResponse } from "@/lib/api-response";
+import { logger } from "@/lib/logger";
+
+const VALID_STATUSES = [
+  "pending", "in-transit", "delivered", "cancelled",
+  "partially-delivered", "refunded",
+];
 
 export async function POST(req: Request) {
   await dbConnect();
   try {
     const body = await req.json();
 
-    console.log("hist on post consignment api", body);
+    if (!body.admin || !body.supplier || !body.customer) {
+      return errorResponse("admin, supplier, and customer are required", 400);
+    }
+
+    if (!body.products?.length) {
+      return errorResponse("At least one product is required", 400);
+    }
 
     const consignment = await ConsignmentModel.create(body);
-    return NextResponse.json(
-      { message: "✅ Consignment created", consignment },
-      { status: 201 }
-    );
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
-    console.error(error);
-
-    return NextResponse.json({ message: error.message }, { status: 500 });
+    return successResponse({ message: "Consignment created", consignment }, 201);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Something went wrong";
+    logger.error("Error creating consignment", error);
+    return errorResponse(message);
   }
 }
 
@@ -27,8 +35,6 @@ export async function GET(req: Request) {
 
   try {
     const { searchParams } = new URL(req.url);
-
-    // ✅ Extract filters from query params
     const status = searchParams.get("status");
     const startDate = searchParams.get("startDate");
     const endDate = searchParams.get("endDate");
@@ -36,35 +42,31 @@ export async function GET(req: Request) {
     const customer = searchParams.get("customer");
     const destination = searchParams.get("destination");
 
-    // ✅ Build dynamic filter object
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const filter: any = {};
+    if (status && !VALID_STATUSES.includes(status)) {
+      return errorResponse("Invalid status filter", 400);
+    }
+
+    const filter: Record<string, unknown> = {};
 
     if (status) filter.status = status;
     if (supplier) filter.supplier = supplier;
     if (customer) filter.customer = customer;
-    if (destination)
-      filter.destination = { $regex: destination, $options: "i" };
+    if (destination) filter.destination = { $regex: destination, $options: "i" };
 
-    // Filter by date range
     if (startDate || endDate) {
       filter.startDate = {};
-      if (startDate) filter.startDate.$gte = new Date(startDate);
-      if (endDate) filter.startDate.$lte = new Date(endDate);
+      if (startDate) (filter.startDate as Record<string, unknown>).$gte = new Date(startDate);
+      if (endDate) (filter.startDate as Record<string, unknown>).$lte = new Date(endDate);
     }
 
-    // ✅ Fetch consignments based on filters
     const consignments = await ConsignmentModel.find(filter)
-      .populate({
-        path: "admin supplier customer",
-        select: "name email role",
-      })
+      .populate({ path: "admin supplier customer", select: "name email role" })
       .sort({ createdAt: -1 });
 
-    return NextResponse.json({ consignments }, { status: 200 });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
-    console.error("❌ Error fetching consignments:", error);
-    return NextResponse.json({ message: error.message }, { status: 500 });
+    return successResponse({ consignments });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Something went wrong";
+    logger.error("Error fetching consignments", error);
+    return errorResponse(message);
   }
 }

@@ -12,5 +12,5 @@ export interface TUser {
   isActive: boolean;
   createdAt?: Date;
   updatedAt?: Date;
-  consinement: [string];
+  consignment: [string];
 }

@@ -13,11 +13,16 @@ import {
   RiEditLine,
   RiDeleteBinLine,
 } from "react-icons/ri";
+import ConfirmDialog from "@/components/Shared/ConfirmDialog";
+import { useToast } from "@/context/ToastProvider";
 
 const AdminTable = () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [admins, setAdmins] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+  const [deleteTarget, setDeleteTarget] = useState<any | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     fetchAdmins();
@@ -32,6 +37,25 @@ const AdminTable = () => {
       console.error("Error fetching admins:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/users/${deleteTarget._id}`, { method: "DELETE" });
+      if (res.ok) {
+        toast("success", "Admin deleted");
+        setAdmins((prev) => prev.filter((a) => a._id !== deleteTarget._id));
+      } else {
+        toast("error", "Failed to delete admin");
+      }
+    } catch (err) {
+      console.error("Delete error:", err);
+    } finally {
+      setDeleting(false);
+      setDeleteTarget(null);
     }
   };
 
@@ -236,6 +260,7 @@ const AdminTable = () => {
                         <motion.button
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
+                          onClick={() => setDeleteTarget(admin)}
                           className="p-2 text-text-secondary hover:text-danger hover:bg-red-50 rounded-lg transition-all"
                           title="Delete admin"
                         >
@@ -328,6 +353,7 @@ const AdminTable = () => {
                 <RiEditLine className="w-4 h-4" />
               </button>
               <button
+                onClick={() => setDeleteTarget(admin)}
                 className="p-2 text-text-secondary hover:text-danger hover:bg-red-50 rounded-lg transition-all"
                 title="Delete admin"
               >
@@ -370,6 +396,15 @@ const AdminTable = () => {
           </div>
         </div>
       </motion.div>
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        title="Delete Admin"
+        message={`Are you sure you want to delete ${deleteTarget?.name}? This action cannot be undone.`}
+        loading={deleting}
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </motion.div>
   );
 };

@@ -1,34 +1,30 @@
 import dbConnect from "@/db/db";
 import { UserModel } from "@/db/model/user";
-import { NextResponse } from "next/server";
 import bcrypt from "bcrypt";
 import { signToken } from "@/lib/jwt";
+import { successResponse, errorResponse } from "@/lib/api-response";
 
 export async function POST(req: Request) {
   await dbConnect();
 
   try {
     const { email, password } = await req.json();
-    const user = await UserModel.findOne({ email });
 
+    if (!email || !password) {
+      return errorResponse("Email and password are required", 400);
+    }
+
+    const user = await UserModel.findOne({ email });
     if (!user)
-      return NextResponse.json({ message: "User not found" }, { status: 404 });
+      return errorResponse("User not found", 404);
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid)
-      return NextResponse.json(
-        { message: "Invalid credentials" },
-        { status: 401 }
-      );
+      return errorResponse("Invalid credentials", 401);
 
-    // 🧠 Create JWT Token
-    const token = signToken({
-      id: user._id,
-      role: user.role,
-      email: user.email,
-    });
+    const token = signToken({ id: user._id, role: user.role, email: user.email });
 
-    return NextResponse.json({
+    return successResponse({
       message: "Login successful",
       token,
       user: {
@@ -38,7 +34,8 @@ export async function POST(req: Request) {
         role: user.role,
       },
     });
-  } catch (error: any) {
-    return NextResponse.json({ message: error.message }, { status: 500 });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Something went wrong";
+    return errorResponse(message);
   }
 }

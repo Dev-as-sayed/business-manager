@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { RiLoader2Line } from "react-icons/ri";
 import { motion, AnimatePresence } from "framer-motion";
+import { useToast } from "@/context/ToastProvider";
 
 const AddUser = () => {
   const [formData, setFormData] = useState({
@@ -16,10 +17,7 @@ const AddUser = () => {
   });
 
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState<{
-    type: "success" | "error";
-    text: string;
-  } | null>(null);
+  const { toast } = useToast();
 
   // 🧠 Handle input change
   const handleChange = (
@@ -32,7 +30,6 @@ const AddUser = () => {
   // 🚀 Submit user registration
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setMessage(null);
     setLoading(true);
 
     try {
@@ -48,7 +45,7 @@ const AddUser = () => {
         throw new Error(data.message || "Failed to add user");
       }
 
-      setMessage({ type: "success", text: "User added successfully!" });
+      toast("success", "User added successfully!");
       setFormData({
         name: "",
         email: "",
@@ -60,7 +57,7 @@ const AddUser = () => {
       });
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
-      setMessage({ type: "error", text: error.message });
+      toast("error", error.message);
     } finally {
       setLoading(false);
     }
@@ -90,31 +87,6 @@ const AddUser = () => {
           transition={{ delay: 0.1 }}
           className="bg-card rounded-2xl shadow-sm p-6"
         >
-          <AnimatePresence>
-            {message && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                className={`mb-6 p-4 rounded-xl ${
-                  message.type === "success"
-                    ? "bg-green-50 text-green-800"
-                    : "bg-red-50 text-red-800"
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium">{message.text}</p>
-                  <button
-                    onClick={() => setMessage(null)}
-                    className="text-current opacity-70 hover:opacity-100 transition-opacity"
-                  >
-                    ×
-                  </button>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Personal Information Section */}
             <div>
