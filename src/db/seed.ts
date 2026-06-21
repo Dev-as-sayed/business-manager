@@ -10,13 +10,13 @@ async function seed() {
   logger.success("Connected to database");
 
   logger.info("Clearing existing data...");
-  await UserModel.deleteMany({});
-  await ConsignmentModel.deleteMany({});
+  await Promise.all([
+    UserModel.deleteMany({}),
+    ConsignmentModel.deleteMany({}),
+  ]);
   logger.success("Existing data cleared");
 
-  // ── Users ──────────────────────────────────────────────
-  console.log("👤 Creating users...");
-
+  // ── Admin ──
   const admin = await UserModel.create({
     name: "Admin User",
     email: "admin@business.com",
@@ -26,354 +26,391 @@ async function seed() {
     role: "admin",
     isActive: true,
   });
+  logger.success(`Admin created: ${admin.email}`);
 
-  const customer1 = await UserModel.create({
-    name: "Rahim Mia",
-    email: "rahim@example.com",
-    password: "customer123",
-    phone: "+8801700000002",
-    address: "Gulshan, Dhaka",
-    role: "customer",
-    isActive: true,
-  });
-
-  const customer2 = await UserModel.create({
-    name: "Karim Hossain",
-    email: "karim@example.com",
-    password: "customer123",
-    phone: "+8801700000003",
-    address: "Uttara, Dhaka",
-    role: "customer",
-    isActive: true,
-  });
-
-  const customer3 = await UserModel.create({
-    name: "Fatima Begum",
-    email: "fatima@example.com",
-    password: "customer123",
-    phone: "+8801700000004",
-    address: "Mirpur, Dhaka",
-    role: "customer",
-    isActive: true,
-  });
-
-  const supplier1 = await UserModel.create({
-    name: "Mobile Hub BD",
-    email: "info@mobilehub.com",
-    password: "supplier123",
-    phone: "+8801700000005",
-    address: "Elephant Road, Dhaka",
-    role: "supplier",
-    isActive: true,
-  });
-
-  const supplier2 = await UserModel.create({
-    name: "Tech Traders",
-    email: "info@techtraders.com",
-    password: "supplier123",
-    phone: "+8801700000006",
-    address: "Kawran Bazar, Dhaka",
-    role: "supplier",
-    isActive: true,
-  });
-
-  logger.success("Users created");
-  logger.info(`Admin: admin@business.com / admin123`);
-  logger.info(`Customers: rahim@example.com, karim@example.com, fatima@example.com`);
-  logger.info(`Suppliers: info@mobilehub.com, info@techtraders.com`);
-  logger.info(`(all customers/suppliers password: customer123 / supplier123)`);
-
-  // ── Consignments ───────────────────────────────────────
-  console.log("📦 Creating consignments...");
-
-  // Consignment 1: Delivered mobile phones
-  const consignment1 = await ConsignmentModel.create({
-    consignmentId: "CNS-2025-001",
-    admin: admin._id,
-    supplier: supplier1._id,
-    customer: customer1._id,
-    products: [
-      {
-        category: "mobile",
-        brand: "Samsung",
-        model: "Galaxy S24 Ultra",
-        specs: "12GB RAM, 256GB Storage, Titanium Gray",
-        buyingPrice: 85000,
-        sellingPrice: 95000,
-        quantity: 10,
-        status: "delivered",
-        deliveredQuantity: 10,
-      },
-      {
-        category: "mobile",
-        brand: "Apple",
-        model: "iPhone 15 Pro Max",
-        specs: "8GB RAM, 256GB Storage, Natural Titanium",
-        buyingPrice: 120000,
-        sellingPrice: 135000,
-        quantity: 5,
-        status: "delivered",
-        deliveredQuantity: 5,
-      },
-      {
-        category: "accessory",
-        brand: "Samsung",
-        model: "Galaxy Buds Pro 2",
-        specs: "Wireless Earbuds, White",
-        buyingPrice: 8000,
-        sellingPrice: 12000,
-        quantity: 20,
-        status: "delivered",
-        deliveredQuantity: 20,
-      },
-    ],
-    transactions: [
-      {
-        transactionId: "TXN-001",
-        date: new Date("2025-01-05"),
-        amount: 500000,
-        method: "bank",
-        type: "advance",
-        direction: "in",
-        party: "customer",
-        note: "Advance payment via bank transfer",
-        status: "completed",
-      },
-      {
-        transactionId: "TXN-002",
-        date: new Date("2025-01-15"),
-        amount: 600000,
-        method: "cash",
-        type: "payment",
-        direction: "in",
-        party: "customer",
-        note: "Final payment on delivery",
-        status: "completed",
-      },
-      {
-        transactionId: "TXN-003",
-        date: new Date("2025-01-03"),
-        amount: 850000,
-        method: "bank",
-        type: "pay-out",
-        direction: "out",
-        party: "supplier",
-        note: "Payment to supplier for stock",
-        status: "completed",
-      },
-    ],
-    startDate: new Date("2025-01-01"),
-    shippingDate: new Date("2025-01-08"),
-    deliveryDate: new Date("2025-01-15"),
-    shippingCost: 5000,
-    destination: "Gulshan, Dhaka",
-    status: "delivered",
-  });
-
-  // Consignment 2: In-transit laptops
-  const consignment2 = await ConsignmentModel.create({
-    consignmentId: "CNS-2025-002",
-    admin: admin._id,
-    supplier: supplier2._id,
-    customer: customer2._id,
-    products: [
-      {
-        category: "laptop",
-        brand: "Apple",
-        model: "MacBook Pro M3",
-        specs: "16GB RAM, 512GB SSD, Space Gray",
-        buyingPrice: 160000,
-        sellingPrice: 185000,
-        quantity: 3,
-        status: "delivered",
-        deliveredQuantity: 3,
-      },
-      {
-        category: "laptop",
-        brand: "Dell",
-        model: "XPS 15",
-        specs: "32GB RAM, 1TB SSD, Intel i9",
-        buyingPrice: 140000,
-        sellingPrice: 160000,
-        quantity: 5,
-        status: "pending",
-        deliveredQuantity: 0,
-      },
-      {
-        category: "accessory",
-        brand: "Logitech",
-        model: "MX Master 3S",
-        specs: "Wireless Mouse, Graphite",
-        buyingPrice: 5000,
-        sellingPrice: 8500,
-        quantity: 15,
-        status: "pending",
-        deliveredQuantity: 0,
-      },
-    ],
-    transactions: [
-      {
-        transactionId: "TXN-004",
-        date: new Date("2025-02-10"),
-        amount: 300000,
-        method: "mobile",
-        type: "advance",
-        direction: "in",
-        party: "customer",
-        note: "Advance via bKash",
-        status: "completed",
-      },
-      {
-        transactionId: "TXN-005",
-        date: new Date("2025-02-08"),
-        amount: 750000,
-        method: "bank",
-        type: "pay-out",
-        direction: "out",
-        party: "supplier",
-        note: "Partial supplier payment",
-        status: "completed",
-      },
-    ],
-    startDate: new Date("2025-02-05"),
-    shippingDate: new Date("2025-02-12"),
-    shippingCost: 4000,
-    destination: "Uttara, Dhaka",
-    status: "in-transit",
-  });
-
-  // Consignment 3: Pending (small order)
-  const consignment3 = await ConsignmentModel.create({
-    consignmentId: "CNS-2025-003",
-    admin: admin._id,
-    supplier: supplier1._id,
-    customer: customer3._id,
-    products: [
-      {
-        category: "mobile",
-        brand: "Xiaomi",
-        model: "Redmi Note 13 Pro",
-        specs: "8GB RAM, 256GB Storage, Midnight Black",
-        buyingPrice: 25000,
-        sellingPrice: 32000,
-        quantity: 25,
-        status: "pending",
-        deliveredQuantity: 0,
-      },
-    ],
-    transactions: [
-      {
-        transactionId: "TXN-006",
-        date: new Date("2025-03-01"),
-        amount: 200000,
-        method: "cash",
-        type: "advance",
-        direction: "in",
-        party: "customer",
-        note: "Cash advance",
-        status: "pending",
-      },
-    ],
-    startDate: new Date("2025-03-01"),
-    shippingCost: 3000,
-    destination: "Mirpur, Dhaka",
-    status: "pending",
-  });
-
-  // Consignment 4: Completed with mixed status
-  const consignment4 = await ConsignmentModel.create({
-    consignmentId: "CNS-2025-004",
-    admin: admin._id,
-    supplier: supplier2._id,
-    customer: customer1._id,
-    products: [
-      {
-        category: "laptop",
-        brand: "HP",
-        model: "Spectre x360",
-        specs: "16GB RAM, 512GB SSD, Intel i7",
-        buyingPrice: 110000,
-        sellingPrice: 135000,
-        quantity: 4,
-        status: "delivered",
-        deliveredQuantity: 4,
-      },
-      {
-        category: "accessory",
-        brand: "Samsung",
-        model: "T7 Shield 1TB",
-        specs: "External SSD, IP65 rated",
-        buyingPrice: 9000,
-        sellingPrice: 14000,
-        quantity: 10,
-        status: "refunded",
-        refundedQuantity: 10,
-      },
-    ],
-    transactions: [
-      {
-        transactionId: "TXN-007",
-        date: new Date("2025-03-15"),
-        amount: 400000,
-        method: "bank",
-        type: "advance",
-        direction: "in",
-        party: "customer",
-        note: "Advance payment",
-        status: "completed",
-      },
-      {
-        transactionId: "TXN-008",
-        date: new Date("2025-03-25"),
-        amount: 140000,
-        method: "bank",
-        type: "refund",
-        direction: "out",
-        party: "customer",
-        note: "Refund for returned SSDs",
-        status: "completed",
-      },
-      {
-        transactionId: "TXN-009",
-        date: new Date("2025-03-20"),
-        amount: 450000,
-        method: "bank",
-        type: "pay-out",
-        direction: "out",
-        party: "supplier",
-        note: "Full supplier payment",
-        status: "completed",
-      },
-    ],
-    startDate: new Date("2025-03-10"),
-    shippingDate: new Date("2025-03-18"),
-    deliveryDate: new Date("2025-03-22"),
-    shippingCost: 3000,
-    destination: "Gulshan, Dhaka",
-    status: "partially-delivered",
-  });
-
-  // Update users with their consignment references
-  await UserModel.findByIdAndUpdate(customer1._id, {
-    $push: {
-      consignment: { $each: [consignment1._id, consignment4._id] },
+  // ── Customers ──
+  const customers = await UserModel.create([
+    {
+      name: "Rahim Mia",
+      email: "rahim@example.com",
+      password: "pass123",
+      phone: "+8801700000002",
+      address: "Mirpur, Dhaka",
+      role: "customer",
+      isActive: true,
     },
-  });
-  await UserModel.findByIdAndUpdate(customer2._id, {
-    $push: { consignment: consignment2._id },
-  });
-  await UserModel.findByIdAndUpdate(customer3._id, {
-    $push: { consignment: consignment3._id },
-  });
+    {
+      name: "Karim Hossain",
+      email: "karim@example.com",
+      password: "pass123",
+      phone: "+8801700000003",
+      address: "Uttara, Dhaka",
+      role: "customer",
+      isActive: true,
+    },
+    {
+      name: "Fatima Begum",
+      email: "fatima@example.com",
+      password: "pass123",
+      phone: "+8801700000004",
+      address: "Banani, Dhaka",
+      role: "customer",
+      isActive: true,
+    },
+  ]);
+  logger.success(`${customers.length} customers created`);
 
-  logger.success("Consignments created");
-  logger.info(`1. CNS-2025-001 — Samsung/Apple mobile order to Rahim — delivered`);
-  logger.info(`2. CNS-2025-002 — MacBook/Dell laptop order to Karim — in-transit`);
-  logger.info(`3. CNS-2025-003 — Xiaomi phone order to Fatima — pending`);
-  logger.info(`4. CNS-2025-004 — HP laptop + Samsung SSD to Rahim — partially-delivered`);
-  logger.success("Seeding complete!");
-  logger.info(`Users: 6 (1 admin, 3 customers, 2 suppliers)`);
-  logger.info(`Consignments: 4`);
+  // ── Suppliers ──
+  const suppliers = await UserModel.create([
+    {
+      name: "Global Tech Ltd",
+      email: "supplier1@example.com",
+      password: "pass123",
+      phone: "+8801700000010",
+      address: "Kawran Bazar, Dhaka",
+      role: "supplier",
+      isActive: true,
+    },
+    {
+      name: "Mobile World BD",
+      email: "supplier2@example.com",
+      password: "pass123",
+      phone: "+8801700000011",
+      address: "Elephant Road, Dhaka",
+      role: "supplier",
+      isActive: true,
+    },
+    {
+      name: "Laptop Hub",
+      email: "supplier3@example.com",
+      password: "pass123",
+      phone: "+8801700000012",
+      address: "Gulshan, Dhaka",
+      role: "supplier",
+      isActive: true,
+    },
+  ]);
+  logger.success(`${suppliers.length} suppliers created`);
+
+  // ── Consignments ──
+  const consignments = await ConsignmentModel.create([
+    {
+      consignmentId: "CNS-2025-001",
+      admin: admin._id,
+      supplier: suppliers[0]._id,
+      customer: customers[0]._id,
+      startDate: new Date("2025-01-15"),
+      shippingDate: new Date("2025-01-18"),
+      deliveryDate: new Date("2025-01-22"),
+      shippingCost: 500,
+      destination: "Mirpur, Dhaka",
+      status: "delivered",
+      totalProductCost: 0,
+      totalSellingPrice: 0,
+      totalAmount: 0,
+      totalAdvance: 0,
+      totalDue: 0,
+      products: [
+        {
+          category: "mobile",
+          brand: "Samsung",
+          model: "Galaxy S24 Ultra",
+          specs: "12GB RAM, 256GB Storage",
+          buyingPrice: 85000,
+          sellingPrice: 95000,
+          quantity: 5,
+          status: "delivered",
+          deliveredQuantity: 5,
+        },
+        {
+          category: "mobile",
+          brand: "iPhone",
+          model: "15 Pro Max",
+          specs: "256GB, Titanium",
+          buyingPrice: 120000,
+          sellingPrice: 135000,
+          quantity: 3,
+          status: "delivered",
+          deliveredQuantity: 3,
+        },
+      ],
+      transactions: [
+        {
+          transactionId: "TXN-001",
+          date: new Date("2025-01-15"),
+          amount: 50000,
+          method: "bank",
+          type: "advance",
+          direction: "in",
+          party: "customer",
+          note: "Advance payment",
+          status: "completed",
+        },
+        {
+          transactionId: "TXN-002",
+          date: new Date("2025-01-22"),
+          amount: 410000,
+          method: "cash",
+          type: "payment",
+          direction: "in",
+          party: "customer",
+          note: "Final payment",
+          status: "completed",
+        },
+        {
+          transactionId: "TXN-003",
+          date: new Date("2025-01-17"),
+          amount: 450000,
+          method: "bank",
+          type: "pay-out",
+          direction: "out",
+          party: "supplier",
+          note: "Supplier payment",
+          status: "completed",
+        },
+      ],
+    },
+    {
+      consignmentId: "CNS-2025-002",
+      admin: admin._id,
+      supplier: suppliers[1]._id,
+      customer: customers[1]._id,
+      startDate: new Date("2025-02-01"),
+      shippingDate: new Date("2025-02-05"),
+      shippingCost: 300,
+      destination: "Uttara, Dhaka",
+      status: "in-transit",
+      totalProductCost: 0,
+      totalSellingPrice: 0,
+      totalAmount: 0,
+      totalAdvance: 0,
+      totalDue: 0,
+      products: [
+        {
+          category: "laptop",
+          brand: "Apple",
+          model: "MacBook Pro M3",
+          specs: "16GB RAM, 512GB SSD",
+          buyingPrice: 140000,
+          sellingPrice: 165000,
+          quantity: 2,
+          status: "pending",
+        },
+        {
+          category: "accessory",
+          brand: "Apple",
+          model: "AirPods Pro 2",
+          specs: "USB-C",
+          buyingPrice: 18000,
+          sellingPrice: 22000,
+          quantity: 10,
+          status: "pending",
+        },
+      ],
+      transactions: [
+        {
+          transactionId: "TXN-004",
+          date: new Date("2025-02-01"),
+          amount: 100000,
+          method: "mobile",
+          type: "advance",
+          direction: "in",
+          party: "customer",
+          note: "Advance from customer",
+          status: "completed",
+        },
+      ],
+    },
+    {
+      consignmentId: "CNS-2025-003",
+      admin: admin._id,
+      supplier: suppliers[2]._id,
+      customer: customers[2]._id,
+      startDate: new Date("2025-02-10"),
+      shippingCost: 200,
+      destination: "Banani, Dhaka",
+      status: "pending",
+      totalProductCost: 0,
+      totalSellingPrice: 0,
+      totalAmount: 0,
+      totalAdvance: 0,
+      totalDue: 0,
+      products: [
+        {
+          category: "laptop",
+          brand: "Dell",
+          model: "XPS 15",
+          specs: "32GB RAM, 1TB SSD",
+          buyingPrice: 130000,
+          sellingPrice: 150000,
+          quantity: 1,
+          status: "pending",
+        },
+        {
+          category: "mobile",
+          brand: "OnePlus",
+          model: "12",
+          specs: "16GB RAM, 512GB Storage",
+          buyingPrice: 55000,
+          sellingPrice: 65000,
+          quantity: 4,
+          status: "pending",
+        },
+      ],
+      transactions: [],
+    },
+    {
+      consignmentId: "CNS-2025-004",
+      admin: admin._id,
+      supplier: suppliers[0]._id,
+      customer: customers[0]._id,
+      startDate: new Date("2025-03-01"),
+      shippingDate: new Date("2025-03-03"),
+      deliveryDate: new Date("2025-03-08"),
+      shippingCost: 400,
+      destination: "Mirpur, Dhaka",
+      status: "delivered",
+      totalProductCost: 0,
+      totalSellingPrice: 0,
+      totalAmount: 0,
+      totalAdvance: 0,
+      totalDue: 0,
+      products: [
+        {
+          category: "mobile",
+          brand: "Xiaomi",
+          model: "14 Pro",
+          specs: "12GB RAM, 256GB Storage",
+          buyingPrice: 60000,
+          sellingPrice: 72000,
+          quantity: 8,
+          status: "delivered",
+          deliveredQuantity: 8,
+        },
+      ],
+      transactions: [
+        {
+          transactionId: "TXN-005",
+          date: new Date("2025-03-01"),
+          amount: 200000,
+          method: "bank",
+          type: "advance",
+          direction: "in",
+          party: "customer",
+          note: "Advance",
+          status: "completed",
+        },
+        {
+          transactionId: "TXN-006",
+          date: new Date("2025-03-08"),
+          amount: 376000,
+          method: "cash",
+          type: "payment",
+          direction: "in",
+          party: "customer",
+          note: "Final payment",
+          status: "completed",
+        },
+        {
+          transactionId: "TXN-007",
+          date: new Date("2025-03-02"),
+          amount: 500000,
+          method: "bank",
+          type: "pay-out",
+          direction: "out",
+          party: "supplier",
+          note: "Supplier payment",
+          status: "completed",
+        },
+      ],
+    },
+    {
+      consignmentId: "CNS-2025-005",
+      admin: admin._id,
+      supplier: suppliers[1]._id,
+      customer: customers[1]._id,
+      startDate: new Date("2025-03-15"),
+      shippingCost: 250,
+      destination: "Uttara, Dhaka",
+      status: "cancelled",
+      totalProductCost: 0,
+      totalSellingPrice: 0,
+      totalAmount: 0,
+      totalAdvance: 0,
+      totalDue: 0,
+      products: [
+        {
+          category: "accessory",
+          brand: "Anker",
+          model: "Power Bank 20000mAh",
+          specs: "USB-C PD 65W",
+          buyingPrice: 2500,
+          sellingPrice: 3500,
+          quantity: 50,
+          status: "pending",
+        },
+      ],
+      transactions: [
+        {
+          transactionId: "TXN-008",
+          date: new Date("2025-03-15"),
+          amount: 50000,
+          method: "mobile",
+          type: "advance",
+          direction: "in",
+          party: "customer",
+          note: "Advance (refunded after cancellation)",
+          status: "completed",
+        },
+        {
+          transactionId: "TXN-009",
+          date: new Date("2025-03-18"),
+          amount: 50000,
+          method: "mobile",
+          type: "refund",
+          direction: "out",
+          party: "customer",
+          note: "Full refund due to cancellation",
+          status: "completed",
+        },
+      ],
+    },
+  ]);
+  logger.success(`${consignments.length} consignments created`);
+
+  // ── Update user consignment references ──
+  for (const consignment of consignments) {
+    const adminUser = await UserModel.findById(consignment.admin);
+    if (adminUser) {
+      adminUser.consignment.push(consignment._id);
+      await adminUser.save();
+    }
+
+    const customerUser = await UserModel.findById(consignment.customer);
+    if (customerUser) {
+      customerUser.consignment.push(consignment._id);
+      await customerUser.save();
+    }
+
+    const supplierUser = await UserModel.findById(consignment.supplier);
+    if (supplierUser) {
+      supplierUser.consignment.push(consignment._id);
+      await supplierUser.save();
+    }
+  }
+  logger.success("User consignment references updated");
+
+  logger.info("");
+  logger.info("═══════════════════════════════════════════");
+  logger.info("         SEED COMPLETE");
+  logger.info("═══════════════════════════════════════════");
+  logger.info("  Admin:    admin@business.com / admin123");
+  logger.info("  Customers: rahim@example.com, karim@example.com, fatima@example.com");
+  logger.info("  Suppliers: supplier1@example.com, supplier2@example.com, supplier3@example.com");
+  logger.info("  Password:  pass123 (for all sample users)");
+  logger.info("  Consignments: 5 created (various statuses)");
+  logger.info("═══════════════════════════════════════════");
+  logger.info("");
 
   process.exit(0);
 }
