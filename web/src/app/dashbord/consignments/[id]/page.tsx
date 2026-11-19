@@ -14,6 +14,7 @@ import AddProductModal from "@/components/Consignment/AddProductModal";
 import EditProductModal from "@/components/Consignment/EditProductModal";
 import AddTransactionModal from "@/components/Consignment/AddTransactionModal";
 import ConfirmDialog from "@/components/Shared/ConfirmDialog";
+import PrintButton from "@/components/Shared/PrintButton";
 import { useToast } from "@/context/ToastProvider";
 import { apiFetch } from "@/lib/api";
 
@@ -135,6 +136,7 @@ const ConsignmentDetails = () => {
           Consignment #{consignment.consignmentId}
         </h1>
         <div className="flex gap-2">
+          <PrintButton />
           <button onClick={() => setShowEditModal(true)} className="btn-primary flex items-center gap-1">
             <BiEdit className="w-4 h-4" /> Edit Consignment
           </button>
@@ -145,6 +147,7 @@ const ConsignmentDetails = () => {
         </div>
       </div>
 
+      <div className="print-area">
       {paymentSummaries && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="card bg-action/5 border-action/20">
@@ -298,6 +301,7 @@ const ConsignmentDetails = () => {
             <div className="flex justify-between"><span className="text-text-secondary">Profit Margin:</span><span className={`font-semibold ${consignment.profitMargin >= 0 ? "text-action" : "text-danger"}`}>{consignment.profitMargin.toFixed(1)}%</span></div>
           </div>
         </div>
+      </div>
       </div>
 
       {showEditModal && <EditConsignmentModal consignment={consignment} onClose={() => setShowEditModal(false)} onUpdate={fetchConsignment} />}

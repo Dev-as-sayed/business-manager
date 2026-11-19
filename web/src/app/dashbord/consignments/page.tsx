@@ -19,6 +19,7 @@ import { format } from "date-fns";
 import { Consignment, User } from "@/lib/types";
 import Link from "next/link";
 import { apiFetch } from "@/lib/api";
+import PrintButton from "@/components/Shared/PrintButton";
 
 const ConsignmentsManagement = () => {
   const router = useRouter();
@@ -234,6 +235,8 @@ const ConsignmentsManagement = () => {
                 <BiRefresh className="w-5 h-5" />
               </motion.div>
             </motion.button>
+
+            <PrintButton label="Print List" />
           </div>
         </div>
 
@@ -329,46 +332,48 @@ const ConsignmentsManagement = () => {
         </AnimatePresence>
       </motion.div>
 
-      {/* Stats Summary */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-        className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6"
-      >
-        <div className="bg-card rounded-xl p-4 border border-border">
-          <div className="text-2xl font-bold text-text-primary mb-1">
-            {consignments.length}
+      {/* Printable Area */}
+      <div className="print-area">
+        {/* Stats Summary */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6"
+        >
+          <div className="bg-card rounded-xl p-4 border border-border">
+            <div className="text-2xl font-bold text-text-primary mb-1">
+              {consignments.length}
+            </div>
+            <div className="text-sm text-text-secondary">Total Consignments</div>
           </div>
-          <div className="text-sm text-text-secondary">Total Consignments</div>
-        </div>
-        <div className="bg-card rounded-xl p-4 border border-border">
-          <div className="text-2xl font-bold text-amber-600 mb-1">
-            {consignments.filter((c) => c.status === "pending").length}
+          <div className="bg-card rounded-xl p-4 border border-border">
+            <div className="text-2xl font-bold text-amber-600 mb-1">
+              {consignments.filter((c) => c.status === "pending").length}
+            </div>
+            <div className="text-sm text-text-secondary">Pending</div>
           </div>
-          <div className="text-sm text-text-secondary">Pending</div>
-        </div>
-        <div className="bg-card rounded-xl p-4 border border-border">
-          <div className="text-2xl font-bold text-blue-600 mb-1">
-            {consignments.filter((c) => c.status === "in-transit").length}
+          <div className="bg-card rounded-xl p-4 border border-border">
+            <div className="text-2xl font-bold text-blue-600 mb-1">
+              {consignments.filter((c) => c.status === "in-transit").length}
+            </div>
+            <div className="text-sm text-text-secondary">In Transit</div>
           </div>
-          <div className="text-sm text-text-secondary">In Transit</div>
-        </div>
-        <div className="bg-card rounded-xl p-4 border border-border">
-          <div className="text-2xl font-bold text-green-600 mb-1">
-            {consignments.filter((c) => c.status === "delivered").length}
+          <div className="bg-card rounded-xl p-4 border border-border">
+            <div className="text-2xl font-bold text-green-600 mb-1">
+              {consignments.filter((c) => c.status === "delivered").length}
+            </div>
+            <div className="text-sm text-text-secondary">Delivered</div>
           </div>
-          <div className="text-sm text-text-secondary">Delivered</div>
-        </div>
-      </motion.div>
+        </motion.div>
 
-      {/* Consignments Table */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-        className="bg-card rounded-2xl shadow-sm overflow-hidden"
-      >
+        {/* Consignments Table */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="bg-card rounded-2xl shadow-sm overflow-hidden"
+        >
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <motion.div
@@ -560,6 +565,7 @@ const ConsignmentsManagement = () => {
           </div>
         )}
       </motion.div>
+      </div>
     </div>
   );
 };
