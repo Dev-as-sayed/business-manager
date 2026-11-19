@@ -1,0 +1,669 @@
+@baseUrl = http://localhost:4000
+@api = {{baseUrl}}/api/v1
+@accessToken = paste-access-token-here
+@refreshToken = paste-refresh-token-here
+
+@userId = paste-user-id
+@roleId = paste-role-id
+@customerId = paste-customer-id
+@supplierId = paste-supplier-id
+@productRequestId = paste-product-request-id
+@quotationId = paste-quotation-id
+@purchaseOrderId = paste-purchase-order-id
+@purchaseOrderItemId = paste-purchase-order-item-id
+@qcReportId = paste-qc-report-id
+@shipmentId = paste-shipment-id
+@customsRecordId = paste-customs-record-id
+@ledgerEntryId = paste-ledger-entry-id
+@attachmentId = paste-attachment-id
+
+### Health
+GET {{baseUrl}}/health
+
+### Readiness
+GET {{baseUrl}}/health/ready
+
+### OpenAPI JSON
+GET {{baseUrl}}/docs.json
+
+### Register customer account
+POST {{api}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "customer@example.com",
+  "password": "Password123!",
+  "firstName": "Jane",
+  "lastName": "Doe",
+  "phone": "+15551234567"
+}
+
+### Login as seeded admin
+POST {{api}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@crm.local",
+  "password": "ChangeMe123!"
+}
+
+### Refresh token
+POST {{api}}/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+
+### Current user
+GET {{api}}/auth/me
+Authorization: Bearer {{accessToken}}
+
+### Logout
+POST {{api}}/auth/logout
+Content-Type: application/json
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+
+### Logout all sessions
+POST {{api}}/auth/logout-all
+Authorization: Bearer {{accessToken}}
+
+### Forgot password
+POST {{api}}/auth/forgot-password
+Content-Type: application/json
+
+{
+  "email": "admin@crm.local"
+}
+
+### Reset password
+POST {{api}}/auth/reset-password
+Content-Type: application/json
+
+{
+  "token": "paste-reset-token",
+  "password": "NewPassword123!"
+}
+
+### Change password
+POST {{api}}/auth/change-password
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "currentPassword": "ChangeMe123!",
+  "newPassword": "NewPassword123!"
+}
+
+### List permissions
+GET {{api}}/roles/permissions
+Authorization: Bearer {{accessToken}}
+
+### List roles
+GET {{api}}/roles?page=1&limit=20
+Authorization: Bearer {{accessToken}}
+
+### Create role
+POST {{api}}/roles
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "name": "Sales Manager",
+  "description": "Manages customers and quotations",
+  "permissions": ["customers:read", "customers:create", "quotations:read", "quotations:create"]
+}
+
+### Get role
+GET {{api}}/roles/{{roleId}}
+Authorization: Bearer {{accessToken}}
+
+### Update role
+PATCH {{api}}/roles/{{roleId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "description": "Updated role description"
+}
+
+### Delete role
+DELETE {{api}}/roles/{{roleId}}
+Authorization: Bearer {{accessToken}}
+
+### List users
+GET {{api}}/users?page=1&limit=20
+Authorization: Bearer {{accessToken}}
+
+### Create user
+POST {{api}}/users
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "email": "operator@example.com",
+  "password": "Password123!",
+  "firstName": "Operations",
+  "lastName": "User",
+  "phone": "+15551234567",
+  "roleId": "{{roleId}}"
+}
+
+### Get user
+GET {{api}}/users/{{userId}}
+Authorization: Bearer {{accessToken}}
+
+### Update user
+PATCH {{api}}/users/{{userId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "firstName": "Updated",
+  "lastName": "Operator"
+}
+
+### Update user status
+PATCH {{api}}/users/{{userId}}/status
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "status": "ACTIVE"
+}
+
+### Delete user
+DELETE {{api}}/users/{{userId}}
+Authorization: Bearer {{accessToken}}
+
+### List customers
+GET {{api}}/customers?page=1&limit=20
+Authorization: Bearer {{accessToken}}
+
+### Create customer
+POST {{api}}/customers
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "name": "Acme Trading",
+  "contactName": "Jane Doe",
+  "email": "jane@acme.example",
+  "phone": "+15551234567",
+  "address": "123 Market Street",
+  "city": "San Francisco",
+  "country": "USA",
+  "taxId": "US-123456",
+  "notes": "Key customer"
+}
+
+### Get customer
+GET {{api}}/customers/{{customerId}}
+Authorization: Bearer {{accessToken}}
+
+### Update customer
+PATCH {{api}}/customers/{{customerId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "phone": "+15557654321",
+  "notes": "Updated customer notes"
+}
+
+### Update customer status
+PATCH {{api}}/customers/{{customerId}}/status
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "status": "ACTIVE"
+}
+
+### Delete customer
+DELETE {{api}}/customers/{{customerId}}
+Authorization: Bearer {{accessToken}}
+
+### List suppliers
+GET {{api}}/suppliers?page=1&limit=20
+Authorization: Bearer {{accessToken}}
+
+### Create supplier
+POST {{api}}/suppliers
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "name": "Shenzhen Components",
+  "contactName": "Li Wei",
+  "email": "li@supplier.example",
+  "phone": "+861234567890",
+  "address": "88 Industrial Road",
+  "city": "Shenzhen",
+  "country": "China",
+  "taxId": "CN-998877",
+  "notes": "Primary supplier"
+}
+
+### Get supplier
+GET {{api}}/suppliers/{{supplierId}}
+Authorization: Bearer {{accessToken}}
+
+### Update supplier
+PATCH {{api}}/suppliers/{{supplierId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "contactName": "Li Wei Updated"
+}
+
+### Update supplier status
+PATCH {{api}}/suppliers/{{supplierId}}/status
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "status": "ACTIVE"
+}
+
+### Delete supplier
+DELETE {{api}}/suppliers/{{supplierId}}
+Authorization: Bearer {{accessToken}}
+
+### List product requests
+GET {{api}}/product-requests?page=1&limit=20
+Authorization: Bearer {{accessToken}}
+
+### Create product request
+POST {{api}}/product-requests
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "customerId": "{{customerId}}",
+  "title": "Bluetooth speakers",
+  "description": "Custom branded speakers",
+  "items": [
+    {
+      "name": "Portable speaker",
+      "description": "Black, 20W",
+      "quantity": 500,
+      "targetPrice": 18.5,
+      "notes": "Include logo"
+    }
+  ]
+}
+
+### Get product request
+GET {{api}}/product-requests/{{productRequestId}}
+Authorization: Bearer {{accessToken}}
+
+### Update product request
+PATCH {{api}}/product-requests/{{productRequestId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "description": "Updated product request"
+}
+
+### Update product request status
+PATCH {{api}}/product-requests/{{productRequestId}}/status
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "status": "SUBMITTED"
+}
+
+### Assign product request
+PATCH {{api}}/product-requests/{{productRequestId}}/assign
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "assignedUserId": "{{userId}}"
+}
+
+### Delete product request
+DELETE {{api}}/product-requests/{{productRequestId}}
+Authorization: Bearer {{accessToken}}
+
+### List quotations
+GET {{api}}/quotations?page=1&limit=20
+Authorization: Bearer {{accessToken}}
+
+### Create quotation
+POST {{api}}/quotations
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "productRequestId": "{{productRequestId}}",
+  "currency": "USD",
+  "serviceFeeRate": 0.05,
+  "shippingFee": 350,
+  "tax": 120,
+  "validUntil": "2026-12-31",
+  "notes": "Quote valid for 30 days",
+  "items": [
+    {
+      "name": "Portable speaker",
+      "description": "Black, 20W",
+      "quantity": 500,
+      "unitPrice": 18.5,
+      "notes": "Logo included"
+    }
+  ]
+}
+
+### Get quotation
+GET {{api}}/quotations/{{quotationId}}
+Authorization: Bearer {{accessToken}}
+
+### Update quotation
+PATCH {{api}}/quotations/{{quotationId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "shippingFee": 400,
+  "notes": "Updated shipping fee"
+}
+
+### Update quotation status
+PATCH {{api}}/quotations/{{quotationId}}/status
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "status": "SENT"
+}
+
+### Approve quotation
+PATCH {{api}}/quotations/{{quotationId}}/approve
+Authorization: Bearer {{accessToken}}
+
+### Delete quotation
+DELETE {{api}}/quotations/{{quotationId}}
+Authorization: Bearer {{accessToken}}
+
+### List purchase orders
+GET {{api}}/purchase-orders?page=1&limit=20
+Authorization: Bearer {{accessToken}}
+
+### Create purchase order
+POST {{api}}/purchase-orders
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "quotationId": "{{quotationId}}",
+  "supplierId": "{{supplierId}}",
+  "shippingFee": 350,
+  "tax": 120,
+  "expectedDeliveryDate": "2027-01-15",
+  "notes": "Production order",
+  "items": [
+    {
+      "name": "Portable speaker",
+      "description": "Black, 20W",
+      "quantity": 500,
+      "unitCost": 12.5,
+      "notes": "Logo included"
+    }
+  ]
+}
+
+### Get purchase order
+GET {{api}}/purchase-orders/{{purchaseOrderId}}
+Authorization: Bearer {{accessToken}}
+
+### Update purchase order
+PATCH {{api}}/purchase-orders/{{purchaseOrderId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "notes": "Updated production notes"
+}
+
+### Update purchase order status
+PATCH {{api}}/purchase-orders/{{purchaseOrderId}}/status
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "status": "IN_PRODUCTION"
+}
+
+### Approve purchase order
+PATCH {{api}}/purchase-orders/{{purchaseOrderId}}/approve
+Authorization: Bearer {{accessToken}}
+
+### Delete purchase order
+DELETE {{api}}/purchase-orders/{{purchaseOrderId}}
+Authorization: Bearer {{accessToken}}
+
+### List QC reports
+GET {{api}}/quality-control?page=1&limit=20
+Authorization: Bearer {{accessToken}}
+
+### Create QC report
+POST {{api}}/quality-control
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "purchaseOrderId": "{{purchaseOrderId}}",
+  "inspectorId": "{{userId}}",
+  "inspectionDate": "2027-01-05",
+  "notes": "Pre-shipment inspection",
+  "photoUrls": ["https://example.com/qc/photo-1.jpg"]
+}
+
+### Get QC report
+GET {{api}}/quality-control/{{qcReportId}}
+Authorization: Bearer {{accessToken}}
+
+### Update QC report
+PATCH {{api}}/quality-control/{{qcReportId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "notes": "Inspection completed"
+}
+
+### Update QC status
+PATCH {{api}}/quality-control/{{qcReportId}}/status
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "status": "PASSED"
+}
+
+### List shipments
+GET {{api}}/shipments?page=1&limit=20
+Authorization: Bearer {{accessToken}}
+
+### Create shipment
+POST {{api}}/shipments
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "carrier": "DHL",
+  "trackingNumber": "DHL123456789",
+  "shippingMethod": "Air freight",
+  "origin": "Shenzhen",
+  "destination": "San Francisco",
+  "estimatedDeliveryDate": "2027-02-01",
+  "notes": "Consolidated shipment",
+  "items": [
+    {
+      "purchaseOrderItemId": "{{purchaseOrderItemId}}",
+      "quantity": 500
+    }
+  ]
+}
+
+### Get shipment
+GET {{api}}/shipments/{{shipmentId}}
+Authorization: Bearer {{accessToken}}
+
+### Update shipment
+PATCH {{api}}/shipments/{{shipmentId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "trackingNumber": "DHL987654321"
+}
+
+### Update shipment status
+PATCH {{api}}/shipments/{{shipmentId}}/status
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "status": "IN_TRANSIT"
+}
+
+### List customs records
+GET {{api}}/customs?page=1&limit=20
+Authorization: Bearer {{accessToken}}
+
+### Create customs record
+POST {{api}}/customs
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "shipmentId": "{{shipmentId}}",
+  "supplierId": "{{supplierId}}",
+  "declarationNumber": "CUS-2027-0001",
+  "customsOffice": "San Francisco Port",
+  "country": "USA",
+  "dutyAmount": 450,
+  "taxAmount": 120,
+  "otherFees": 35,
+  "currency": "USD",
+  "exchangeRate": 1,
+  "clearanceDate": "2027-02-03",
+  "notes": "Cleared without inspection"
+}
+
+### Get customs record
+GET {{api}}/customs/{{customsRecordId}}
+Authorization: Bearer {{accessToken}}
+
+### Update customs record
+PATCH {{api}}/customs/{{customsRecordId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "notes": "Updated customs notes"
+}
+
+### Update customs status
+PATCH {{api}}/customs/{{customsRecordId}}/status
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "status": "CLEARED"
+}
+
+### Delete customs record
+DELETE {{api}}/customs/{{customsRecordId}}
+Authorization: Bearer {{accessToken}}
+
+### List ledger entries
+GET {{api}}/finance/ledger-entries?page=1&limit=20
+Authorization: Bearer {{accessToken}}
+
+### Create ledger entry
+POST {{api}}/finance/ledger-entries
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "purchaseOrderId": "{{purchaseOrderId}}",
+  "supplierId": "{{supplierId}}",
+  "type": "REVENUE",
+  "amount": 9250,
+  "currency": "USD",
+  "exchangeRate": 1,
+  "description": "Customer payment",
+  "reference": "INV-2027-0001",
+  "occurredAt": "2027-02-10"
+}
+
+### Get ledger entry
+GET {{api}}/finance/ledger-entries/{{ledgerEntryId}}
+Authorization: Bearer {{accessToken}}
+
+### Update ledger entry
+PATCH {{api}}/finance/ledger-entries/{{ledgerEntryId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "description": "Updated payment description"
+}
+
+### Approve ledger entry
+PATCH {{api}}/finance/ledger-entries/{{ledgerEntryId}}/approve
+Authorization: Bearer {{accessToken}}
+
+### Void ledger entry
+PATCH {{api}}/finance/ledger-entries/{{ledgerEntryId}}/void
+Authorization: Bearer {{accessToken}}
+
+### Export ledger entries
+GET {{api}}/finance/ledger-entries/export?status=APPROVED
+Authorization: Bearer {{accessToken}}
+Accept: text/csv
+
+### Purchase order profit
+GET {{api}}/finance/profit?purchaseOrderId={{purchaseOrderId}}
+Authorization: Bearer {{accessToken}}
+
+### List attachments
+GET {{api}}/attachments?entityType=purchase_order&entityId={{purchaseOrderId}}&page=1&limit=20
+Authorization: Bearer {{accessToken}}
+
+### Upload attachment
+POST {{api}}/attachments
+Authorization: Bearer {{accessToken}}
+Content-Type: multipart/form-data; boundary=----CRMBoundary
+
+------CRMBoundary
+Content-Disposition: form-data; name="entityType"
+
+purchase_order
+------CRMBoundary
+Content-Disposition: form-data; name="entityId"
+
+{{purchaseOrderId}}
+------CRMBoundary
+Content-Disposition: form-data; name="file"; filename="sample.pdf"
+Content-Type: application/pdf
+
+< ./sample.pdf
+------CRMBoundary--
+
+### Get attachment
+GET {{api}}/attachments/{{attachmentId}}
+Authorization: Bearer {{accessToken}}
+
+### Delete attachment
+DELETE {{api}}/attachments/{{attachmentId}}
+Authorization: Bearer {{accessToken}}
