@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="630" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#140A0A"/>
+      <stop offset="0.55" stop-color="#2A0D12"/>
+      <stop offset="1" stop-color="#140A0A"/>
+    </linearGradient>
+    <linearGradient id="red" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#E11D3C"/>
+      <stop offset="1" stop-color="#A50D25"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#F0C24B"/>
+      <stop offset="1" stop-color="#D4A017"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+      <stop stop-color="#C8102E" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#C8102E" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <circle cx="1010" cy="315" r="300" fill="url(#glow)"/>
+  <rect x="0" y="0" width="1200" height="6" fill="url(#gold)"/>
+
+  <g transform="translate(80, 96)">
+    <rect x="0" y="0" width="56" height="56" rx="14" fill="url(#red)"/>
+    <g transform="translate(10, 8) scale(0.15)">
+      <path d="M100 18 C128 40 142 78 136 118 L120 140 L80 140 L64 118 C58 78 72 40 100 18 Z" fill="#FFFAF3"/>
+      <circle cx="100" cy="82" r="15" fill="#C8102E" stroke="#D4A017" stroke-width="4"/>
+      <path d="M64 118 L40 150 L68 148 Z" fill="#D4A017"/>
+      <path d="M136 118 L160 150 L132 148 Z" fill="#D4A017"/>
+      <path d="M88 142 L100 178 L112 142 Z" fill="#D4A017"/>
+    </g>
+    <text x="76" y="24" fill="#F0C24B" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" letter-spacing="4">THE BRAND</text>
+    <text x="76" y="50" fill="#FFFAF3" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="700">Launcher</text>
+  </g>
+
+  <text x="80" y="270" fill="#F0C24B" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700" letter-spacing="3">SOURCE · CREATE · LAUNCH</text>
+
+  <text x="80" y="350" fill="#FFFAF3" font-family="Arial, Helvetica, sans-serif" font-size="64" font-weight="700">From product idea</text>
+  <text x="80" y="424" fill="#FFFAF3" font-family="Arial, Helvetica, sans-serif" font-size="64" font-weight="700">to profitable brand.</text>
+
+  <text x="80" y="486" fill="#D8C6B8" font-family="Arial, Helvetica, sans-serif" font-size="24">Sourcing · Product development · Website · Content · Marketing</text>
+
+  <g transform="translate(80, 530)">
+    <rect x="0" y="0" width="230" height="52" rx="12" fill="url(#red)"/>
+    <text x="115" y="33" text-anchor="middle" fill="#FFFFFF" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700">Start Your Brand</text>
+  </g>
+  <text x="336" y="564" fill="#F0C24B" font-family="Arial, Helvetica, sans-serif" font-size="18">Door-to-door shipping · Factory-direct prices</text>
+
+  <g transform="translate(860, 160)">
+    <circle cx="100" cy="100" r="118" fill="url(#red)" opacity="0.18"/>
+    <circle cx="100" cy="100" r="92" fill="none" stroke="#D4A017" stroke-opacity="0.5" stroke-width="2"/>
+    <g transform="translate(0, 0) scale(0.9)">
+      <path d="M100 18 C128 40 142 78 136 118 L120 140 L80 140 L64 118 C58 78 72 40 100 18 Z" fill="url(#red)"/>
+      <circle cx="100" cy="82" r="15" fill="#FFFAF3" stroke="#D4A017" stroke-width="4"/>
+      <path d="M64 118 L40 150 L68 148 Z" fill="#D4A017"/>
+      <path d="M136 118 L160 150 L132 148 Z" fill="#D4A017"/>
+      <path d="M88 142 L100 178 L112 142 Z" fill="#F0C24B"/>
+    </g>
+  </g>
+
+  <g transform="translate(860, 420)">
+    <text x="100" y="0" text-anchor="middle" fill="#FFFAF3" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700">ONE TEAM. ONE PLATFORM.</text>
+    <text x="100" y="28" text-anchor="middle" fill="#D8C6B8" font-family="Arial, Helvetica, sans-serif" font-size="15">From your first idea to your first sale.</text>
+  </g>
+</svg>

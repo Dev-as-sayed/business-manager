@@ -1,42 +1,45 @@
-import { type MetadataRoute } from "next";
+import type { MetadataRoute } from "next";
+import { siteUrl } from "@/lib/seo";
 
 export default function sitemap(): MetadataRoute.Sitemap {
+  const lastModified = new Date();
+
   return [
     {
-      url: "/",
-      lastModified: new Date(),
-      changeFrequency: "daily",
+      url: siteUrl,
+      lastModified,
+      changeFrequency: "weekly",
       priority: 1,
     },
     {
-      url: "/about",
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.8,
-    },
-    {
-      url: "/services",
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.8,
-    },
-    {
-      url: "/contact",
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.8,
-    },
-    {
-      url: "/terms",
-      lastModified: new Date(),
+      url: `${siteUrl}/about`,
+      lastModified,
       changeFrequency: "monthly",
-      priority: 0.5,
+      priority: 0.8,
     },
     {
-      url: "/privacy",
-      lastModified: new Date(),
+      url: `${siteUrl}/services`,
+      lastModified,
       changeFrequency: "monthly",
-      priority: 0.5,
+      priority: 0.9,
+    },
+    {
+      url: `${siteUrl}/contact`,
+      lastModified,
+      changeFrequency: "monthly",
+      priority: 0.9,
+    },
+    {
+      url: `${siteUrl}/privacy`,
+      lastModified,
+      changeFrequency: "yearly",
+      priority: 0.3,
+    },
+    {
+      url: `${siteUrl}/terms`,
+      lastModified,
+      changeFrequency: "yearly",
+      priority: 0.3,
     },
   ];
 }

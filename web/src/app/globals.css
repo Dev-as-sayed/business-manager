@@ -64,6 +64,8 @@
   --band-surface: #151d16;
   --band-line: #2a352c;
   --band-muted: #a7b3a5;
+  /* Card surface */
+  --card: #ffffff;
 }
 
 /* 🌙 Dark Theme */
@@ -100,6 +102,8 @@
 
     --accent: #18181b;
     --accent-hover: #27272a;
+
+    --card: #18181b;
   }
 }
 
@@ -379,6 +383,7 @@ html {
   --color-border: var(--border);
   --color-accent: var(--accent);
   --color-accent-hover: var(--accent-hover);
+  --color-card: var(--card);
 
   /* Text */
   --color-text-primary: var(--text-primary);
@@ -428,6 +433,13 @@ html {
   --color-band-line: var(--band-line);
   --color-band-muted: var(--band-muted);
 
+  /* Brand Launcher accents */
+  --color-gold: var(--gold);
+  --color-gold-soft: var(--gold-soft);
+  --color-gold-foreground: var(--gold-foreground);
+  --color-launcher-ink: var(--launcher-ink);
+  --color-launcher-ink-soft: var(--launcher-ink-soft);
+
   /* Typography */
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
@@ -435,7 +447,8 @@ html {
 
   /* Radius and shadow */
   --radius-card: 1.5rem;
-  --shadow-soft: 0 18px 50px -32px rgba(12, 18, 13, 0.4);
+  --shadow-soft: 0 2px 6px rgba(0, 0, 0, 0.05);
+  --shadow-card: 0 4px 10px rgba(0, 0, 0, 0.08);
   --shadow-lift: 0 28px 70px -40px rgba(12, 18, 13, 0.45);
 }
 
@@ -518,5 +531,110 @@ html {
   @page {
     margin: 15mm;
     size: A4 portrait;
+  }
+}
+
+/* ============================================================
+   The Brand Launcher — public marketing theme (China red + gold)
+   Scoped with .theme-launcher so the dashboard keeps its theme.
+   ============================================================ */
+.theme-launcher {
+  --background: #fffaf3;
+  --secondary-background: #fff3e6;
+  --foreground: #1a0f0f;
+  --border: #f0dfc8;
+
+  --text-primary: #1a0f0f;
+  --text-secondary: #5c4a3d;
+  --text-muted: #9a8878;
+
+  --primary: #c8102e;
+  --primary-hover: #a50d25;
+  --primary-foreground: #ffffff;
+
+  --secondary: #7a0c1e;
+  --secondary-hover: #5e0916;
+  --secondary-foreground: #ffffff;
+
+  --action: #1f9d63;
+  --action-hover: #157a4b;
+  --action-foreground: #ffffff;
+
+  --warning: #d4a017;
+  --warning-hover: #b88a12;
+  --warning-foreground: #1a0f0f;
+
+  --danger: #dc2626;
+  --danger-hover: #b91c1c;
+  --danger-foreground: #ffffff;
+
+  --accent: #fff3e6;
+  --accent-hover: #ffe8cc;
+  --card: #ffffff;
+
+  --gold: #d4a017;
+  --gold-soft: #f6e3b0;
+  --gold-foreground: #1a0f0f;
+
+  --launcher-ink: #140a0a;
+  --launcher-ink-soft: #241313;
+
+  color: var(--text-primary);
+  background-color: var(--background);
+}
+
+@media (prefers-color-scheme: dark) {
+  .theme-launcher {
+    --background: #140a0a;
+    --secondary-background: #1c0f0f;
+    --foreground: #fdf6ec;
+    --border: #3a2424;
+
+    --text-primary: #fdf6ec;
+    --text-secondary: #d8c6b8;
+    --text-muted: #a8917f;
+
+    --primary: #e11d3c;
+    --primary-hover: #c8102e;
+    --primary-foreground: #ffffff;
+
+    --secondary: #a50d25;
+    --secondary-hover: #7a0c1e;
+    --secondary-foreground: #ffffff;
+
+    --action: #34d399;
+    --action-hover: #10b981;
+    --action-foreground: #06281b;
+
+    --warning: #f0c24b;
+    --warning-hover: #d4a017;
+    --warning-foreground: #1a0f0f;
+
+    --danger: #f87171;
+    --danger-hover: #ef4444;
+    --danger-foreground: #1a0f0f;
+
+    --accent: #241313;
+    --accent-hover: #332020;
+    --card: #1c0f0f;
+
+    --gold: #f0c24b;
+    --gold-soft: #4a3610;
+    --gold-foreground: #1a0f0f;
+
+    --launcher-ink: #0d0606;
+    --launcher-ink-soft: #1c0f0f;
+  }
+}
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .theme-launcher *,
+  .theme-launcher *::before,
+  .theme-launcher *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
