@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" fill="none">
+  <rect width="800" height="600" fill="#0c120d"/>
+  <g stroke="#1a241b" stroke-width="1">
+    <path d="M0 120h800M0 240h800M0 360h800M0 480h800M160 0v600M320 0v600M480 0v600M640 0v600"/>
+  </g>
+  <path d="M120 420C210 190 590 190 680 420" stroke="#c8f169" stroke-width="3" stroke-dasharray="6 10"/>
+  <circle cx="120" cy="420" r="16" fill="#1e2a15" stroke="#c8f169" stroke-width="3"/>
+  <circle cx="120" cy="420" r="32" stroke="#c8f169" stroke-width="1" opacity=".35"/>
+  <circle cx="680" cy="420" r="16" fill="#1e2a15" stroke="#c8f169" stroke-width="3"/>
+  <circle cx="680" cy="420" r="32" stroke="#c8f169" stroke-width="1" opacity=".35"/>
+  <g>
+    <path d="M90 360h60v60H90z" fill="#151d16" stroke="#2a352c" stroke-width="2"/>
+    <path d="M100 360v-16h40v16" stroke="#2a352c" stroke-width="2"/>
+    <rect x="104" y="380" width="32" height="20" fill="#c8f169" opacity=".2"/>
+  </g>
+  <g>
+    <path d="M650 360h60v60h-60z" fill="#151d16" stroke="#2a352c" stroke-width="2"/>
+    <path d="M650 420v-60l30-20 30 20v60" fill="#1e2a15" stroke="#2a352c" stroke-width="2"/>
+    <rect x="672" y="390" width="16" height="30" fill="#c8f169" opacity=".35"/>
+  </g>
+  <g transform="translate(380 270)">
+    <path d="M-46 10 0-30l46 40v60H-46V10Z" fill="#151d16" stroke="#2a352c" stroke-width="2"/>
+    <rect x="-14" y="34" width="28" height="36" rx="2" fill="#1e2a15" stroke="#c8f169" stroke-width="2"/>
+    <path d="M-30 10h60" stroke="#c8f169" stroke-width="2" opacity=".5"/>
+  </g>
+  <g transform="translate(400 230)">
+    <rect x="-16" y="-18" width="32" height="32" rx="6" fill="#c8f169"/>
+    <path d="M-8 -2 0 6 10-8" stroke="#0c120d" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <g stroke="#c8f169" stroke-width="2" opacity=".45">
+    <path d="M210 300h80M230 280h40M530 300h70"/>
+  </g>
+  <g fill="#a7b3a5" font-family="monospace" font-size="14" letter-spacing="4">
+    <text x="84" y="500">CHINA</text>
+    <text x="620" y="500">YOUR DOOR</text>
+  </g>
+  <rect x="300" y="500" width="200" height="2" rx="1" fill="#2a352c"/>
+  <circle cx="300" cy="501" r="3" fill="#c8f169"/>
+  <circle cx="400" cy="501" r="3" fill="#c8f169" opacity=".5"/>
+  <circle cx="500" cy="501" r="3" fill="#c8f169"/>
+</svg>

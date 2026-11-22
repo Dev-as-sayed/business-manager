@@ -5,8 +5,14 @@ const appEnvSchema = z.object({
   APP_ENV: z.enum(['development', 'preview', 'production']).default('development'),
   EXPO_PUBLIC_API_URL: z.string().url().default('http://localhost:4000/api/v1'),
   EXPO_PUBLIC_SENTRY_DSN: z.string().url().optional(),
-  EXPO_PUBLIC_EAS_PROJECT_ID: z.string().min(1).optional(),
-  EXPO_PUBLIC_UPDATES_URL: z.string().url().optional(),
+  EXPO_PUBLIC_EAS_PROJECT_ID: z
+    .string()
+    .min(1)
+    .default('bb4a834b-dc5d-4559-b562-5ce9f1b10932'),
+  EXPO_PUBLIC_UPDATES_URL: z
+    .string()
+    .url()
+    .default('https://u.expo.dev/bb4a834b-dc5d-4559-b562-5ce9f1b10932'),
   EXPO_PUBLIC_PRIVACY_URL: z.string().url().default('https://example.com/privacy'),
   EXPO_PUBLIC_MIN_SUPPORTED_VERSION: z.string().default('1.0.0'),
 });
@@ -26,7 +32,7 @@ const appEnv = parsed.data;
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: 'Manifest CRM',
-  slug: 'manifest-crm',
+  slug: 'omnia',
   version: '1.0.0',
   orientation: 'portrait',
   scheme: 'omnia',

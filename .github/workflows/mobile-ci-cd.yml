@@ -1,0 +1,241 @@
+# Required repository secrets:
+#   EXPO_TOKEN                  - Expo token with access to @sayed206/omnia
+#   PREVIEW_API_URL             - Preview/staging API base URL (optional, has fallback)
+#   PRODUCTION_API_URL          - Production API base URL (required for releases)
+#   GOOGLE_SERVICE_ACCOUNT_JSON - Google Play service account JSON (required for releases)
+#
+# Flow:
+#   pull_request / push -> CI (lint, typecheck, test)
+#   push to main        -> preview EAS Update + internal APK (Expo Go/dev testing)
+#   manual dispatch     -> production AAB + Google Play submission (choose track)
+#   tag mobile-v*       -> production AAB + Google Play internal submission
+name: Mobile CI/CD
+
+on:
+  push:
+    branches: [main]
+    tags: ['mobile-v*']
+    paths:
+      - 'CRM/mobile/**'
+      - '.github/workflows/mobile-ci-cd.yml'
+  pull_request:
+    paths:
+      - 'CRM/mobile/**'
+      - '.github/workflows/mobile-ci-cd.yml'
+  workflow_dispatch:
+    inputs:
+      preview:
+        description: 'Publish preview update and build for Expo Go/internal testing'
+        type: boolean
+        default: false
+      release:
+        description: 'Build production AAB and submit to Google Play'
+        type: boolean
+        default: false
+      track:
+        description: 'Google Play track for the production release'
+        type: choice
+        options:
+          - internal
+          - alpha
+          - beta
+          - production
+        default: internal
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: '22'
+  EAS_CLI_VERSION: '20.1.0'
+
+defaults:
+  run:
+    working-directory: CRM/mobile
+
+jobs:
+  ci:
+    name: Lint, typecheck, test
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    concurrency:
+      group: mobile-ci-${{ github.ref }}
+      cancel-in-progress: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: CRM/mobile/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Test
+        run: npm test -- --ci
+
+  preview:
+    name: Preview (Expo Go / internal)
+    needs: ci
+    if: |
+      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'workflow_dispatch' && inputs.preview)
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    environment: preview
+    concurrency:
+      group: mobile-preview
+      cancel-in-progress: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: CRM/mobile/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup Expo and EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: ${{ env.EAS_CLI_VERSION }}
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Publish preview update
+        env:
+          APP_ENV: preview
+          EXPO_PUBLIC_API_URL: ${{ secrets.PREVIEW_API_URL || 'https://crm-staging.example.com/api/v1' }}
+        run: |
+          eas update \
+            --platform android \
+            --channel preview \
+            --environment preview \
+            --message "Preview ${{ github.sha }}" \
+            --non-interactive \
+            --json > "$RUNNER_TEMP/preview-update.json"
+
+      - name: Build preview APK
+        env:
+          EXPO_PUBLIC_API_URL: ${{ secrets.PREVIEW_API_URL || 'https://crm-staging.example.com/api/v1' }}
+        run: |
+          eas build \
+            --platform android \
+            --profile preview \
+            --non-interactive \
+            --wait \
+            --json > "$RUNNER_TEMP/preview-build.json"
+
+      - name: Write preview summary
+        run: |
+          {
+            echo "### Preview (Expo Go / internal)"
+            echo ""
+            echo "- Update group: \`$(jq -r '.[0].group // .[0].id' "$RUNNER_TEMP/preview-update.json")\`"
+            echo "- Update page: https://expo.dev/accounts/sayed206/projects/omnia/updates/$(jq -r '.[0].group // .[0].id' "$RUNNER_TEMP/preview-update.json")"
+            echo "- Build ID: \`$(jq -r '.[0].id' "$RUNNER_TEMP/preview-build.json")\`"
+            echo "- Status: \`$(jq -r '.[0].status' "$RUNNER_TEMP/preview-build.json")\`"
+            echo "- Build page: https://expo.dev/accounts/sayed206/projects/omnia/builds/$(jq -r '.[0].id' "$RUNNER_TEMP/preview-build.json")"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  production:
+    name: Production (Google Play)
+    needs: ci
+    if: |
+      (github.event_name == 'workflow_dispatch' && inputs.release) ||
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/mobile-v'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    environment: production
+    concurrency:
+      group: mobile-production
+      cancel-in-progress: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: CRM/mobile/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup Expo and EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: ${{ env.EAS_CLI_VERSION }}
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Validate production API URL
+        env:
+          PRODUCTION_API_URL: ${{ secrets.PRODUCTION_API_URL }}
+        run: |
+          if [ -z "$PRODUCTION_API_URL" ]; then
+            echo "::error::Set the PRODUCTION_API_URL repository secret."
+            exit 1
+          fi
+
+      - name: Write Google Play service account
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+        run: |
+          if [ -z "$GOOGLE_SERVICE_ACCOUNT_JSON" ]; then
+            echo "::error::Set the GOOGLE_SERVICE_ACCOUNT_JSON repository secret."
+            exit 1
+          fi
+          printf '%s' "$GOOGLE_SERVICE_ACCOUNT_JSON" > google-service-account.json
+
+      - name: Build production AAB
+        env:
+          EXPO_PUBLIC_API_URL: ${{ secrets.PRODUCTION_API_URL }}
+        run: |
+          eas build \
+            --platform android \
+            --profile production \
+            --non-interactive \
+            --wait \
+            --json > "$RUNNER_TEMP/production-build.json"
+
+      - name: Submit to Google Play
+        run: |
+          BUILD_ID=$(jq -r '.[0].id' "$RUNNER_TEMP/production-build.json")
+          eas submit \
+            --platform android \
+            --profile "${{ github.event.inputs.track || 'internal' }}" \
+            --id "$BUILD_ID" \
+            --non-interactive \
+            --wait
+
+      - name: Write production summary
+        run: |
+          BUILD_ID=$(jq -r '.[0].id' "$RUNNER_TEMP/production-build.json")
+          {
+            echo "### Production build"
+            echo ""
+            echo "- Build ID: \`$BUILD_ID\`"
+            echo "- Status: \`$(jq -r '.[0].status' "$RUNNER_TEMP/production-build.json")\`"
+            echo "- Build page: https://expo.dev/accounts/sayed206/projects/omnia/builds/$BUILD_ID"
+            echo "- Play Store track: \`${{ github.event.inputs.track || 'internal' }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"

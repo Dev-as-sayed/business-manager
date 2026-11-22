@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" fill="none">
+  <rect width="800" height="600" fill="#0c120d"/>
+  <g stroke="#1a241b" stroke-width="1">
+    <path d="M0 100h800M0 200h800M0 300h800M0 400h800M0 500h800M100 0v600M200 0v600M300 0v600M400 0v600M500 0v600M600 0v600M700 0v600"/>
+  </g>
+  <path d="M80 460h120v60H80zM260 300h80v220h-80zM420 380h140v140H420zM620 240h100v280H620z" fill="#151d16" stroke="#2a352c" stroke-width="2"/>
+  <path d="M0 250c120 40 220-60 340 0s200 90 460 30" stroke="#2a352c" stroke-width="14" opacity=".6"/>
+  <path d="M0 250c120 40 220-60 340 0s200 90 460 30" stroke="#1a241b" stroke-width="2" stroke-dasharray="12 14"/>
+  <g>
+    <path d="M420 210c0-33 27-60 60-60s60 27 60 60c0 44-60 100-60 100s-60-56-60-100Z" fill="#c8f169"/>
+    <circle cx="480" cy="208" r="20" fill="#0c120d"/>
+  </g>
+  <circle cx="480" cy="208" r="46" stroke="#c8f169" stroke-width="1" opacity=".3"/>
+  <g>
+    <path d="M180 160c0-24 20-44 44-44s44 20 44 44c0 32-44 74-44 74s-44-42-44-74Z" fill="#1e2a15" stroke="#4a6500" stroke-width="2"/>
+    <circle cx="224" cy="159" r="14" fill="#c8f169" opacity=".7"/>
+  </g>
+  <g>
+    <path d="M650 150c0-20 16-36 36-36s36 16 36 36c0 26-36 60-36 60s-36-34-36-60Z" fill="#1e2a15" stroke="#4a6500" stroke-width="2"/>
+    <circle cx="686" cy="149" r="11" fill="#c8f169" opacity=".5"/>
+  </g>
+  <g fill="#a7b3a5" font-family="monospace" font-size="12" letter-spacing="3">
+    <text x="330" y="540">HEADQUARTERS</text>
+    <text x="420" y="160">CHINA</text>
+  </g>
+</svg>

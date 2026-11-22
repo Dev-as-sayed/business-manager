@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* 🌐 Root Variables (Light Theme – Default) */
 :root {
   /* Backgrounds */
@@ -41,6 +43,27 @@
   /* Accent (used for cards or highlights) */
   --accent: #f9fafb;
   --accent-hover: #f3f4f6;
+
+  /* Omnia marketing palette */
+  --paper: #f4f6ee;
+  --surface: #ffffff;
+  --surface-2: #e9ede1;
+  --ink: #0c120d;
+  --ink-muted: #5b665c;
+  --line: #d7ddce;
+  --brand: #0c120d;
+  --brand-strong: #1a241b;
+  --brand-bright: #0c120d;
+  --brand-soft: #e9ede1;
+  --lime: #c8f169;
+  --lime-strong: #b6e84a;
+  --lime-ink: #4a6500;
+  --lime-soft: #edf9cc;
+  --lime-contrast: #0c120d;
+  --band: #0c120d;
+  --band-surface: #151d16;
+  --band-line: #2a352c;
+  --band-muted: #a7b3a5;
 }
 
 /* 🌙 Dark Theme */
@@ -77,6 +100,201 @@
 
     --accent: #18181b;
     --accent-hover: #27272a;
+  }
+}
+
+/* Omnia dark theme (class-based, set by ThemeScript) */
+.dark {
+  --paper: #0a0f0b;
+  --surface: #121a13;
+  --surface-2: #1a241b;
+  --ink: #f2f5ec;
+  --ink-muted: #a7b3a5;
+  --line: #2a352c;
+  --brand: #c8f169;
+  --brand-strong: #d6ff7a;
+  --brand-bright: #d4ff4f;
+  --brand-soft: #1e2a15;
+  --lime: #c8f169;
+  --lime-strong: #d6ff7a;
+  --lime-ink: #d4ff4f;
+  --lime-soft: #1e2a15;
+  --lime-contrast: #0c120d;
+  --band: #050805;
+  --band-surface: #101711;
+  --band-line: #243027;
+  --band-muted: #9ca99a;
+  color-scheme: dark;
+}
+
+/* Omnia marketing shell */
+.marketing {
+  --header-h: 64px;
+  --radius-card: 1.5rem;
+  color-scheme: light;
+}
+
+.dark .marketing {
+  color-scheme: dark;
+}
+
+@media (min-width: 768px) {
+  .marketing {
+    --header-h: 76px;
+  }
+}
+
+.marketing ::selection {
+  background: var(--lime);
+  color: var(--lime-contrast);
+}
+
+/* Type scale — single source of truth for marketing pages */
+.type-h1 {
+  font-family: var(--font-display);
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  line-height: 1.05;
+  letter-spacing: -0.045em;
+  padding-bottom: 0.06em;
+  text-wrap: balance;
+}
+
+.type-h2 {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 3rem);
+  line-height: 1.1;
+  letter-spacing: -0.035em;
+  padding-bottom: 0.05em;
+  text-wrap: balance;
+}
+
+.type-h3 {
+  font-size: 1.25rem;
+  line-height: 1.35;
+  letter-spacing: -0.02em;
+}
+
+.type-body {
+  font-size: 1rem;
+  line-height: 1.65;
+}
+
+.type-small {
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.marketing :where(a, button, input, textarea, select, summary):focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px var(--lime);
+}
+
+.dark
+  .marketing
+  :where(a, button, input, textarea, select, summary):focus-visible {
+  outline-color: var(--lime);
+  box-shadow: 0 0 0 4px var(--ink);
+}
+
+.blueprint-grid {
+  background-image:
+    linear-gradient(
+      to right,
+      color-mix(in srgb, var(--ink) 7%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--ink) 7%, transparent) 1px,
+      transparent 1px
+    );
+  background-size: 48px 48px;
+}
+
+.blueprint-grid-inverse {
+  background-image:
+    linear-gradient(
+      to right,
+      rgba(255, 255, 255, 0.07) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0.07) 1px,
+      transparent 1px
+    );
+  background-size: 48px 48px;
+}
+
+.lime-highlight {
+  background-image: linear-gradient(
+    transparent 54%,
+    var(--lime) 54%,
+    var(--lime) 92%,
+    transparent 92%
+  );
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  padding-inline: 0.06em;
+}
+
+.caution-stripe {
+  background-image: repeating-linear-gradient(
+    135deg,
+    var(--ink) 0,
+    var(--ink) 8px,
+    var(--lime) 8px,
+    var(--lime) 16px
+  );
+}
+
+.route-dash {
+  stroke-dasharray: 6 8;
+  animation: route-dash 2.4s linear infinite;
+}
+
+@keyframes route-dash {
+  to {
+    stroke-dashoffset: -28;
+  }
+}
+
+.skip-link {
+  position: fixed;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 100;
+  transform: translateY(-160%);
+  border-radius: 9999px;
+  background: var(--ink);
+  color: var(--paper);
+  padding: 0.65rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: transform 0.2s ease;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .route-dash {
+    animation: none;
   }
 }
 
@@ -188,6 +406,37 @@ html {
   --color-danger: var(--danger);
   --color-danger-hover: var(--danger-hover);
   --color-danger-foreground: var(--danger-foreground);
+
+  /* Omnia marketing tokens */
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-line: var(--line);
+  --color-brand: var(--brand);
+  --color-brand-strong: var(--brand-strong);
+  --color-brand-bright: var(--brand-bright);
+  --color-brand-soft: var(--brand-soft);
+  --color-lime: var(--lime);
+  --color-lime-strong: var(--lime-strong);
+  --color-lime-ink: var(--lime-ink);
+  --color-lime-soft: var(--lime-soft);
+  --color-lime-contrast: var(--lime-contrast);
+  --color-band: var(--band);
+  --color-band-surface: var(--band-surface);
+  --color-band-line: var(--band-line);
+  --color-band-muted: var(--band-muted);
+
+  /* Typography */
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
+  --font-display: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
+
+  /* Radius and shadow */
+  --radius-card: 1.5rem;
+  --shadow-soft: 0 18px 50px -32px rgba(12, 18, 13, 0.4);
+  --shadow-lift: 0 28px 70px -40px rgba(12, 18, 13, 0.45);
 }
 
 /* Print Styles */
